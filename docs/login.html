@@ -349,8 +349,15 @@
 
     function handleLogin(e) {
       e.preventDefault();
+      const user = document.getElementById('username').value;
+      const pass = document.getElementById('password').value;
       const err = document.getElementById('errorMsg');
-      err.classList.add('show');
+      if (user != '' && pass != '') {
+        err.classList.remove('show');
+        window.location.href = 'dashboard.html';
+      } else {
+        err.classList.add('show');
+      }
     }
   </script>
 </body>
