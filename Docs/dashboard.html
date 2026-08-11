@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MedCase Pro – Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    .status-pipeline {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+    .pipeline-item {
+      flex: 1;
+      min-width: 120px;
+      background: var(--surface);
+      border-radius: var(--radius-md);
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--divider-light);
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+    }
+    .pipeline-item:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+    .pipe-flag {
+      width: 12px; height: 20px;
+      border-radius: 3px;
+      flex-shrink: 0;
+    }
+    .pipe-info { min-width: 0; }
+    .pipe-count { font-size: 22px; font-weight: 700; color: var(--text-primary); line-height: 1; }
+    .pipe-label { font-size: 11px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 340px;
+      gap: 20px;
+    }
+    .activity-item {
+      display: flex;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--divider-light);
+    }
+    .activity-item:last-child { border-bottom: none; }
+    .activity-avatar {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      background: var(--primary-50);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--primary);
+      flex-shrink: 0;
+    }
+    .activity-text { font-size: 13px; line-height: 1.5; }
+    .activity-text strong { font-weight: 500; color: var(--text-primary); }
+    .activity-text a { color: var(--primary); font-weight: 500; }
+    .activity-time { font-size: 11px; color: var(--text-secondary); margin-top: 3px; }
+
+    .task-input {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .task-input input {
+      flex: 1;
+      height: 38px;
+      border: 1.5px solid var(--divider);
+      border-radius: var(--radius-md);
+      padding: 0 12px;
+      font-size: 14px;
+      font-family: 'Roboto', sans-serif;
+      outline: none;
+      background: var(--bg);
+    }
+    .task-input input:focus { border-color: var(--primary); background: white; }
+    .task-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--divider-light);
+    }
+    .task-item:last-child { border-bottom: none; }
+    .task-item input[type="checkbox"] { accent-color: var(--primary); width: 16px; height: 16px; flex-shrink: 0; margin-top: 2px; cursor: pointer; }
+    .task-text { font-size: 13px; color: var(--text-primary); line-height: 1.4; }
+    .task-text.done { text-decoration: line-through; color: var(--text-secondary); }
+    .task-meta { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+
+    .recent-case {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--divider-light);
+      cursor: pointer;
+      transition: background 0.15s;
+      border-radius: var(--radius-sm);
+      padding: 10px 8px;
+      margin: 0 -8px;
+    }
+    .recent-case:hover { background: var(--primary-50); }
+    .recent-case:last-child { border-bottom: none; }
+    .rc-avatar {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 600;
+      color: white;
+      flex-shrink: 0;
+    }
+    .rc-info { flex: 1; min-width: 0; }
+    .rc-name { font-size: 13px; font-weight: 500; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .rc-id { font-size: 11px; color: var(--text-secondary); }
+    .rc-time { font-size: 11px; color: var(--text-secondary); white-space: nowrap; }
+
+    .mini-chart {
+      display: flex;
+      align-items: flex-end;
+      gap: 4px;
+      height: 48px;
+    }
+    .mini-bar {
+      flex: 1;
+      background: var(--primary-100);
+      border-radius: 3px 3px 0 0;
+      transition: background 0.2s;
+      cursor: pointer;
+      position: relative;
+    }
+    .mini-bar:hover { background: var(--primary); }
+    .mini-bar span {
+      position: absolute;
+      bottom: calc(100% + 4px);
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 10px;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .mini-bar:hover span { opacity: 1; }
+
+    .perf-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--divider-light);
+    }
+    .perf-item:last-child { border-bottom: none; }
+    .perf-name { font-size: 13px; color: var(--text-primary); width: 120px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .perf-bar-wrap { flex: 1; height: 6px; background: var(--bg); border-radius: 3px; overflow: hidden; }
+    .perf-bar { height: 100%; background: var(--primary); border-radius: 3px; transition: width 0.6s; }
+    .perf-val { font-size: 12px; font-weight: 600; color: var(--text-secondary); width: 30px; text-align: right; }
+
+    @media (max-width: 1200px) {
+      .dashboard-grid { grid-template-columns: 1fr 1fr; }
+      .dashboard-grid > *:last-child { grid-column: span 2; }
+    }
+    @media (max-width: 768px) {
+      .dashboard-grid { grid-template-columns: 1fr; }
+      .dashboard-grid > *:last-child { grid-column: span 1; }
+      .status-pipeline { gap: 6px; }
+      .pipeline-item { min-width: 100px; padding: 10px 12px; }
+    }
+  </style>
+</head>
+<body>
+<div class="app-shell">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand" onclick="toggleSidebar()">
+      <div class="brand-icon"><span class="material-icons">local_hospital</span></div>
+      <span class="brand-text">MedCase Pro</span>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Principal</div>
+      <div class="nav-item active" onclick="go('dashboard.html')">
+        <span class="material-icons">dashboard</span>
+        <span class="nav-label">Dashboard</span>
+      </div>
+      <div class="nav-item" onclick="go('casos-lista.html')">
+        <span class="material-icons">folder_open</span>
+        <span class="nav-label">Casos</span>
+        <span class="nav-badge">12</span>
+      </div>
+      <div class="nav-section-label">Gestión</div>
+      <div class="nav-item" onclick="go('clientes.html')">
+        <span class="material-icons">business</span>
+        <span class="nav-label">Clientes</span>
+      </div>
+      <div class="nav-item" onclick="go('proveedores.html')">
+        <span class="material-icons">local_pharmacy</span>
+        <span class="nav-label">Proveedores</span>
+      </div>
+      <div class="nav-item" onclick="go('facturacion.html')">
+        <span class="material-icons">receipt_long</span>
+        <span class="nav-label">Facturación</span>
+      </div>
+      <div class="nav-section-label">Herramientas</div>
+      <div class="nav-item" onclick="go('administracion.html')">
+        <span class="material-icons">admin_panel_settings</span>
+        <span class="nav-label">Administración</span>
+      </div>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="user-card">
+        <div class="user-avatar">WA</div>
+        <div class="user-info">
+          <div class="user-name">Web Admin</div>
+          <div class="user-role">Administrador</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main-area">
+    <!-- Header -->
+    <header class="header">
+      <button class="header-toggle" onclick="toggleSidebar()">
+        <span class="material-icons">menu</span>
+      </button>
+      <div class="page-title">Dashboard</div>
+      <div class="header-search">
+        <span class="material-icons search-icon">search</span>
+        <input type="text" placeholder="Buscar caso, pasajero, cliente…" oninput="quickSearch(this.value)">
+      </div>
+      <div class="header-actions">
+        <button class="icon-btn" onclick="go('caso-registro.html')" data-tooltip="Nuevo Caso">
+          <span class="material-icons">add_circle_outline</span>
+        </button>
+        <button class="icon-btn" data-tooltip="Notificaciones">
+          <span class="material-icons">notifications_none</span>
+          <span class="notif-dot"></span>
+        </button>
+        <button class="icon-btn" data-tooltip="Ayuda">
+          <span class="material-icons">help_outline</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Content -->
+    <main class="content">
+      <!-- Greeting -->
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h2 style="font-size:20px;font-weight:700;color:var(--text-primary)">Buenos días, Web Admin 👋</h2>
+          <p class="text-secondary text-sm" style="margin-top:2px">Martes, 11 de agosto 2026 · Tienes <strong>12 casos</strong> pendientes de atención</p>
+        </div>
+        <button class="btn btn-primary" onclick="go('caso-registro.html')">
+          <span class="material-icons">add</span> Nuevo Caso
+        </button>
+      </div>
+
+      <!-- KPIs -->
+      <div class="kpi-grid">
+        <div class="kpi-card c-amber" onclick="go('casos-lista.html')">
+          <div class="kpi-icon amber"><span class="material-icons">pending_actions</span></div>
+          <div class="kpi-value">47</div>
+          <div class="kpi-label">Sin Resolver</div>
+          <div class="kpi-delta up"><span class="material-icons">arrow_upward</span>+3 hoy</div>
+        </div>
+        <div class="kpi-card c-red" onclick="go('casos-lista.html')">
+          <div class="kpi-icon red"><span class="material-icons">schedule</span></div>
+          <div class="kpi-value">12</div>
+          <div class="kpi-label">Vencidos</div>
+          <div class="kpi-delta down"><span class="material-icons">arrow_downward</span>-2 vs ayer</div>
+        </div>
+        <div class="kpi-card c-cyan" onclick="go('casos-lista.html')">
+          <div class="kpi-icon cyan"><span class="material-icons">hourglass_empty</span></div>
+          <div class="kpi-value">8</div>
+          <div class="kpi-label">En Espera</div>
+          <div class="kpi-delta up"><span class="material-icons">remove</span>Sin cambios</div>
+        </div>
+        <div class="kpi-card c-blue" onclick="go('casos-lista.html')">
+          <div class="kpi-icon blue"><span class="material-icons">person_off</span></div>
+          <div class="kpi-value">5</div>
+          <div class="kpi-label">Sin Asignar</div>
+          <div class="kpi-delta down"><span class="material-icons">arrow_downward</span>-1 vs ayer</div>
+        </div>
+      </div>
+
+      <!-- Pipeline de estados -->
+      <div class="status-pipeline">
+        <div class="pipeline-item" onclick="filterCasos('coordinar')">
+          <div class="pipe-flag" style="background:var(--s-coordinar)"></div>
+          <div class="pipe-info"><div class="pipe-count">18</div><div class="pipe-label">Coordinar</div></div>
+        </div>
+        <div class="pipeline-item" onclick="filterCasos('seguimiento')">
+          <div class="pipe-flag" style="background:var(--s-seguimiento)"></div>
+          <div class="pipe-info"><div class="pipe-count">12</div><div class="pipe-label">Seguimiento</div></div>
+        </div>
+        <div class="pipeline-item" onclick="filterCasos('coordinado')">
+          <div class="pipe-flag" style="background:var(--s-coordinado)"></div>
+          <div class="pipe-info"><div class="pipe-count">9</div><div class="pipe-label">Coordinado</div></div>
+        </div>
+        <div class="pipeline-item" onclick="filterCasos('enviado')">
+          <div class="pipe-flag" style="background:var(--s-enviado)"></div>
+          <div class="pipe-info"><div class="pipe-count">24</div><div class="pipe-label">IM Enviado</div></div>
+        </div>
+        <div class="pipeline-item" onclick="filterCasos('descargos')">
+          <div class="pipe-flag" style="background:var(--s-descargos)"></div>
+          <div class="pipe-info"><div class="pipe-count">7</div><div class="pipe-label">Descargos</div></div>
+        </div>
+        <div class="pipeline-item" onclick="filterCasos('reembolsos')">
+          <div class="pipe-flag" style="background:var(--s-reembolsos)"></div>
+          <div class="pipe-info"><div class="pipe-count">3</div><div class="pipe-label">Reembolsos</div></div>
+        </div>
+        <div class="pipeline-item" onclick="filterCasos('facturacion')">
+          <div class="pipe-flag" style="background:var(--s-facturacion)"></div>
+          <div class="pipe-info"><div class="pipe-count">11</div><div class="pipe-label">Facturación</div></div>
+        </div>
+        <div class="pipeline-item" onclick="filterCasos('cancelado')">
+          <div class="pipe-flag" style="background:var(--s-cancelado)"></div>
+          <div class="pipe-info"><div class="pipe-count">2</div><div class="pipe-label">Cancelado</div></div>
+        </div>
+      </div>
+
+      <!-- Main dashboard grid -->
+      <div class="dashboard-grid">
+
+        <!-- Actividad Reciente -->
+        <div class="card">
+          <div class="card-header">
+            <span class="material-icons" style="color:var(--primary);font-size:20px">history</span>
+            <span class="card-title">Actividad Reciente</span>
+            <button class="btn btn-sm btn-outline">Ver todo</button>
+          </div>
+          <div class="card-body" style="padding:0 20px">
+            <div class="activity-item">
+              <div class="activity-avatar">WA</div>
+              <div>
+                <div class="activity-text"><strong>Web Admin</strong> ha actualizado el caso <a href="caso-detalle.html">ROBERTO RAMOS – UMA-117822</a></div>
+                <div class="activity-time">Hoy, 10:48 · Estado: Coordinar</div>
+              </div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-avatar" style="background:#E8F5E9;color:#2E7D32">LG</div>
+              <div>
+                <div class="activity-text"><strong>Luis González</strong> creó el caso <a href="caso-detalle.html">JUAN S. VASQUEZ – VNA-117821</a></div>
+                <div class="activity-time">Hoy, 09:30 · Cliente: WMC</div>
+              </div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-avatar" style="background:#FFF8E1;color:#F59E0B">MB</div>
+              <div>
+                <div class="activity-text"><strong>María Briceño</strong> cambió estado de <a href="caso-detalle.html">NOA KESSARY – VNA-117818</a> a <strong>IM Enviado</strong></div>
+                <div class="activity-time">Hoy, 08:55 · Cliente: PASSPORT CARD</div>
+              </div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-avatar" style="background:#F3E5F5;color:#7B1FA2">AV</div>
+              <div>
+                <div class="activity-text"><strong>Andy Velasco</strong> añadió servicio a <a href="caso-detalle.html">MARCOS MEJIAS – VNA-117817</a></div>
+                <div class="activity-time">Ayer, 17:20 · Proveedor: Centro Médico Valencia</div>
+              </div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-avatar" style="background:#E3F2FD;color:#1565C0">JG</div>
+              <div>
+                <div class="activity-text"><strong>José Gallegos</strong> envió factura de <a href="caso-detalle.html">BRENDA DA SILVA – VNA-117816</a> a INTERMAC ASSISTANCE</div>
+                <div class="activity-time">Ayer, 16:40</div>
+              </div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-avatar" style="background:#FCE4EC;color:#C62828">AM</div>
+              <div>
+                <div class="activity-text"><strong>Ángel Amonde</strong> canceló el caso <a href="caso-detalle.html">DUARTE SILVA – VNA-117810</a></div>
+                <div class="activity-time">Ayer, 14:10 · Motivo: Duplicado</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Casos por día + performance operadores -->
+        <div style="display:flex;flex-direction:column;gap:20px">
+          <!-- Casos por día -->
+          <div class="card">
+            <div class="card-header">
+              <span class="material-icons" style="color:var(--primary);font-size:20px">bar_chart</span>
+              <span class="card-title">Casos Registrados (7 días)</span>
+            </div>
+            <div class="card-body">
+              <div class="mini-chart" id="miniChart"></div>
+              <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:11px;color:var(--text-secondary)">
+                <span>05/08</span><span>06/08</span><span>07/08</span><span>08/08</span><span>09/08</span><span>10/08</span><span>11/08</span>
+              </div>
+              <div class="flex gap-3 mt-3" style="font-size:12px;color:var(--text-secondary)">
+                <span>Total semana: <strong style="color:var(--text-primary)">86</strong></span>
+                <span>Promedio/día: <strong style="color:var(--text-primary)">12.3</strong></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Rendimiento operadores -->
+          <div class="card">
+            <div class="card-header">
+              <span class="material-icons" style="color:var(--primary);font-size:20px">leaderboard</span>
+              <span class="card-title">Top Operadores del Día</span>
+            </div>
+            <div class="card-body">
+              <div class="perf-item"><span class="perf-name">Luis González</span><div class="perf-bar-wrap"><div class="perf-bar" style="width:90%"></div></div><span class="perf-val">18</span></div>
+              <div class="perf-item"><span class="perf-name">María Briceño</span><div class="perf-bar-wrap"><div class="perf-bar" style="width:75%"></div></div><span class="perf-val">15</span></div>
+              <div class="perf-item"><span class="perf-name">José Gallegos</span><div class="perf-bar-wrap"><div class="perf-bar" style="width:60%"></div></div><span class="perf-val">12</span></div>
+              <div class="perf-item"><span class="perf-name">Andy Velasco</span><div class="perf-bar-wrap"><div class="perf-bar" style="width:45%"></div></div><span class="perf-val">9</span></div>
+              <div class="perf-item"><span class="perf-name">Ángel Amonde</span><div class="perf-bar-wrap"><div class="perf-bar" style="width:35%"></div></div><span class="perf-val">7</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel lateral: Mis Tareas + Casos Recientes -->
+        <div style="display:flex;flex-direction:column;gap:20px">
+          <!-- Mis Tareas -->
+          <div class="card">
+            <div class="card-header">
+              <span class="material-icons" style="color:var(--primary);font-size:20px">checklist</span>
+              <span class="card-title">Mis Tareas</span>
+              <span class="text-secondary text-xs">3/5 completadas</span>
+            </div>
+            <div class="card-body">
+              <div class="task-input">
+                <input type="text" placeholder="Añadir tarea…" id="newTask">
+                <button class="btn btn-primary btn-sm btn-icon" onclick="addTask()"><span class="material-icons">add</span></button>
+              </div>
+              <div id="taskList">
+                <div class="task-item"><input type="checkbox" onchange="toggleTask(this)"><div><div class="task-text">Llamar a proveedor MEDIC SERVICE S.A.</div><div class="task-meta">UMA-117822 · Urgente</div></div></div>
+                <div class="task-item"><input type="checkbox" onchange="toggleTask(this)"><div><div class="task-text">Enviar IM a WMC por caso VNA-117821</div><div class="task-meta">Hoy</div></div></div>
+                <div class="task-item"><input type="checkbox" checked onchange="toggleTask(this)"><div><div class="task-text done">Verificar factura PASSPORT CARD</div><div class="task-meta">Completado 09:15</div></div></div>
+                <div class="task-item"><input type="checkbox" checked onchange="toggleTask(this)"><div><div class="task-text done">Actualizar estado caso NOA KESSARY</div><div class="task-meta">Completado 08:55</div></div></div>
+                <div class="task-item"><input type="checkbox" onchange="toggleTask(this)"><div><div class="task-text">Revisar descargos semana anterior</div><div class="task-meta">Antes de las 5pm</div></div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Casos Recientes -->
+          <div class="card">
+            <div class="card-header">
+              <span class="material-icons" style="color:var(--primary);font-size:20px">folder_open</span>
+              <span class="card-title">Casos Recientes</span>
+              <a href="casos-lista.html" style="font-size:12px;color:var(--primary)">Ver todos</a>
+            </div>
+            <div class="card-body" style="padding:8px 16px">
+              <div class="recent-case" onclick="go('caso-detalle.html')">
+                <div class="rc-avatar">RR</div>
+                <div class="rc-info">
+                  <div class="rc-name">ROBERTO RAMOS</div>
+                  <div class="rc-id">UMA-117822 · QUANTICO</div>
+                </div>
+                <div><span class="status-badge status-coordinar"><span class="flag-dot"></span></span></div>
+              </div>
+              <div class="recent-case" onclick="go('caso-detalle.html')">
+                <div class="rc-avatar" style="background:linear-gradient(135deg,#11998e,#38ef7d)">JV</div>
+                <div class="rc-info">
+                  <div class="rc-name">JUAN S. VASQUEZ</div>
+                  <div class="rc-id">VNA-117821 · WMC</div>
+                </div>
+                <div><span class="status-badge status-seguimiento"><span class="flag-dot"></span></span></div>
+              </div>
+              <div class="recent-case" onclick="go('caso-detalle.html')">
+                <div class="rc-avatar" style="background:linear-gradient(135deg,#f093fb,#f5576c)">CM</div>
+                <div class="rc-info">
+                  <div class="rc-name">CARLA MICAELA CARDOZO</div>
+                  <div class="rc-id">VNA-117820 · GO ASSIST</div>
+                </div>
+                <div><span class="status-badge status-coordinar"><span class="flag-dot"></span></span></div>
+              </div>
+              <div class="recent-case" onclick="go('caso-detalle.html')">
+                <div class="rc-avatar" style="background:linear-gradient(135deg,#4facfe,#00f2fe)">NK</div>
+                <div class="rc-info">
+                  <div class="rc-name">NOA KESSARY</div>
+                  <div class="rc-id">VNA-117818 · PASSPORT CARD</div>
+                </div>
+                <div><span class="status-badge status-enviado"><span class="flag-dot"></span></span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /dashboard-grid -->
+    </main>
+  </div>
+</div>
+
+<script>
+  function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('collapsed');
+  }
+  function go(url) { window.location.href = url; }
+  function filterCasos(estado) { window.location.href = 'casos-lista.html?estado=' + estado; }
+  function quickSearch(val) { if (val.length > 2) { /* live search */ } }
+  function addTask() {
+    const input = document.getElementById('newTask');
+    if (!input.value.trim()) return;
+    const list = document.getElementById('taskList');
+    const div = document.createElement('div');
+    div.className = 'task-item';
+    div.innerHTML = `<input type="checkbox" onchange="toggleTask(this)"><div><div class="task-text">${input.value}</div><div class="task-meta">Recién añadida</div></div>`;
+    list.prepend(div);
+    input.value = '';
+  }
+  function toggleTask(cb) {
+    const text = cb.parentElement.querySelector('.task-text');
+    text.classList.toggle('done', cb.checked);
+  }
+
+  // Mini chart bars
+  const data = [8, 14, 11, 16, 13, 15, 9];
+  const max = Math.max(...data);
+  const chart = document.getElementById('miniChart');
+  data.forEach(v => {
+    const bar = document.createElement('div');
+    bar.className = 'mini-bar';
+    bar.style.height = (v / max * 100) + '%';
+    bar.innerHTML = `<span>${v}</span>`;
+    chart.appendChild(bar);
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MedCase Pro – Listado de Casos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    .page-layout { display: flex; gap: 20px; height: 100%; }
+    /* Filter Panel */
+    .filter-panel {
+      width: 260px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .filter-card {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--divider-light);
+      overflow: hidden;
+    }
+    .filter-header {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--divider-light);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .filter-title { font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+    .filter-title .material-icons { font-size: 18px; color: var(--primary); }
+    .filter-clear { font-size: 12px; color: var(--primary); cursor: pointer; }
+    .filter-clear:hover { text-decoration: underline; }
+    .filter-section { padding: 14px 16px; border-bottom: 1px solid var(--divider-light); }
+    .filter-section:last-child { border-bottom: none; }
+    .filter-section-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-secondary);
+      margin-bottom: 10px;
+    }
+    .filter-input {
+      width: 100%;
+      height: 36px;
+      border: 1.5px solid var(--divider);
+      border-radius: var(--radius-md);
+      padding: 0 10px;
+      font-size: 13px;
+      font-family: 'Roboto', sans-serif;
+      outline: none;
+      background: var(--bg);
+      margin-bottom: 8px;
+      transition: all 0.2s;
+    }
+    .filter-input:focus { border-color: var(--primary); background: white; }
+    .filter-checkbox {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 0;
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--text-primary);
+    }
+    .filter-checkbox input { accent-color: var(--primary); width: 14px; height: 14px; cursor: pointer; }
+    .filter-checkbox .flag-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+    }
+    .filter-checkbox .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .filter-count { margin-left: auto; font-size: 11px; color: var(--text-secondary); background: var(--bg); padding: 1px 6px; border-radius: 10px; }
+
+    /* Cases Area */
+    .cases-area { flex: 1; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+
+    /* Toolbar */
+    .cases-toolbar {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      padding: 14px 16px;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--divider-light);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .search-box {
+      flex: 1;
+      min-width: 200px;
+      position: relative;
+    }
+    .search-box input {
+      width: 100%;
+      height: 38px;
+      border: 1.5px solid var(--divider);
+      border-radius: var(--radius-md);
+      padding: 0 12px 0 38px;
+      font-size: 14px;
+      font-family: 'Roboto', sans-serif;
+      outline: none;
+      background: var(--bg);
+      transition: all 0.2s;
+    }
+    .search-box input:focus { border-color: var(--primary); background: white; box-shadow: 0 0 0 3px rgba(21,101,192,0.1); }
+    .search-box .material-icons { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 18px; color: var(--text-secondary); }
+    .sort-select {
+      height: 38px;
+      border: 1.5px solid var(--divider);
+      border-radius: var(--radius-md);
+      padding: 0 10px;
+      font-size: 13px;
+      font-family: 'Roboto', sans-serif;
+      color: var(--text-secondary);
+      background: var(--bg);
+      cursor: pointer;
+      outline: none;
+    }
+    .view-toggle { display: flex; gap: 2px; background: var(--bg); border-radius: 8px; padding: 3px; }
+    .view-btn {
+      width: 32px; height: 32px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--text-secondary);
+      transition: all 0.2s;
+      background: transparent;
+      border: none;
+    }
+    .view-btn.active { background: white; color: var(--primary); box-shadow: var(--shadow-sm); }
+    .view-btn .material-icons { font-size: 18px; }
+
+    /* Info bar */
+    .cases-info {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 13px;
+      color: var(--text-secondary);
+      padding: 0 2px;
+    }
+
+    /* Case Table View */
+    .cases-table-wrap {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--divider-light);
+      overflow: hidden;
+    }
+    .cases-table-wrap table tbody tr { cursor: pointer; }
+    .case-id-link { color: var(--primary); font-weight: 500; font-size: 13px; }
+    .case-passenger { font-weight: 500; }
+    .case-client { font-size: 13px; }
+    .date-cell { font-size: 13px; color: var(--text-secondary); white-space: nowrap; }
+    .operator-cell { font-size: 13px; }
+    .actions-cell { display: flex; gap: 4px; }
+    .action-icon {
+      width: 32px; height: 32px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.15s;
+      color: var(--text-secondary);
+      border: none;
+      background: transparent;
+    }
+    .action-icon:hover { background: var(--bg); color: var(--primary); }
+    .action-icon.danger:hover { background: var(--error-light); color: var(--error); }
+    .action-icon .material-icons { font-size: 18px; }
+
+    /* Case Card View */
+    .cases-card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 14px;
+    }
+    .case-card {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--divider-light);
+      padding: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .case-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); border-color: var(--primary-100); }
+    .case-card-header { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
+    .case-card-avatar {
+      width: 42px; height: 42px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      font-weight: 700;
+      color: white;
+      flex-shrink: 0;
+    }
+    .case-card-meta { flex: 1; min-width: 0; }
+    .case-card-name { font-size: 14px; font-weight: 600; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .case-card-id { font-size: 12px; color: var(--primary); margin-top: 2px; }
+    .case-card-body { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+    .case-card-field { }
+    .case-card-field-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.4px; color: var(--text-secondary); margin-bottom: 2px; }
+    .case-card-field-value { font-size: 13px; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .case-card-footer { display: flex; align-items: center; justify-content: space-between; padding-top: 12px; border-top: 1px solid var(--divider-light); }
+
+    .priority-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 500;
+      padding: 2px 8px;
+      border-radius: 20px;
+    }
+    .priority-high   { background: var(--error-light); color: var(--error); }
+    .priority-normal { background: #E3F2FD; color: #1565C0; }
+    .priority-low    { background: var(--success-light); color: var(--success); }
+
+    @media (max-width: 900px) {
+      .filter-panel { display: none; }
+    }
+  </style>
+</head>
+<body>
+<div class="app-shell">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand" onclick="toggleSidebar()">
+      <div class="brand-icon"><span class="material-icons">local_hospital</span></div>
+      <span class="brand-text">MedCase Pro</span>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Principal</div>
+      <div class="nav-item" onclick="go('dashboard.html')"><span class="material-icons">dashboard</span><span class="nav-label">Dashboard</span></div>
+      <div class="nav-item active" onclick="go('casos-lista.html')"><span class="material-icons">folder_open</span><span class="nav-label">Casos</span><span class="nav-badge">47</span></div>
+      <div class="nav-section-label">Gestión</div>
+      <div class="nav-item" onclick="go('clientes.html')"><span class="material-icons">business</span><span class="nav-label">Clientes</span></div>
+      <div class="nav-item" onclick="go('proveedores.html')"><span class="material-icons">local_pharmacy</span><span class="nav-label">Proveedores</span></div>
+      <div class="nav-item" onclick="go('facturacion.html')"><span class="material-icons">receipt_long</span><span class="nav-label">Facturación</span></div>
+      <div class="nav-section-label">Herramientas</div>
+      <div class="nav-item" onclick="go('administracion.html')"><span class="material-icons">admin_panel_settings</span><span class="nav-label">Administración</span></div>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="user-card">
+        <div class="user-avatar">WA</div>
+        <div class="user-info"><div class="user-name">Web Admin</div><div class="user-role">Administrador</div></div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main-area">
+    <header class="header">
+      <button class="header-toggle" onclick="toggleSidebar()"><span class="material-icons">menu</span></button>
+      <div>
+        <div class="page-title">Gestión de Casos</div>
+        <div class="breadcrumb"><a href="dashboard.html">Inicio</a><span class="sep">›</span><span>Casos</span></div>
+      </div>
+      <div style="flex:1"></div>
+      <div class="header-actions">
+        <button class="btn btn-outline btn-sm" onclick="exportExcel()"><span class="material-icons">download</span> Exportar</button>
+        <button class="btn btn-primary" onclick="go('caso-registro.html')"><span class="material-icons">add</span> Nuevo Caso</button>
+        <button class="icon-btn"><span class="material-icons">notifications_none</span><span class="notif-dot"></span></button>
+      </div>
+    </header>
+
+    <main class="content">
+      <div class="page-layout">
+
+        <!-- Filter Panel -->
+        <div class="filter-panel">
+          <div class="filter-card">
+            <div class="filter-header">
+              <div class="filter-title"><span class="material-icons">filter_list</span>Filtros</div>
+              <span class="filter-clear" onclick="clearFilters()">Limpiar</span>
+            </div>
+            <div class="filter-section">
+              <div class="filter-section-label">Buscar</div>
+              <input class="filter-input" type="text" placeholder="Nombre, ID, referencia…" oninput="applyFilters()">
+            </div>
+            <div class="filter-section">
+              <div class="filter-section-label">Estado</div>
+              <label class="filter-checkbox"><input type="checkbox" checked onchange="applyFilters()"><span class="flag-pill"><span class="dot" style="background:var(--s-coordinar)"></span>Coordinar</span><span class="filter-count">18</span></label>
+              <label class="filter-checkbox"><input type="checkbox" checked onchange="applyFilters()"><span class="flag-pill"><span class="dot" style="background:var(--s-seguimiento)"></span>Seguimiento</span><span class="filter-count">12</span></label>
+              <label class="filter-checkbox"><input type="checkbox" onchange="applyFilters()"><span class="flag-pill"><span class="dot" style="background:var(--s-coordinado)"></span>Caso Coordinado</span><span class="filter-count">9</span></label>
+              <label class="filter-checkbox"><input type="checkbox" onchange="applyFilters()"><span class="flag-pill"><span class="dot" style="background:var(--s-enviado)"></span>IM Enviado</span><span class="filter-count">24</span></label>
+              <label class="filter-checkbox"><input type="checkbox" onchange="applyFilters()"><span class="flag-pill"><span class="dot" style="background:var(--s-descargos)"></span>Descargos</span><span class="filter-count">7</span></label>
+              <label class="filter-checkbox"><input type="checkbox" onchange="applyFilters()"><span class="flag-pill"><span class="dot" style="background:var(--s-reembolsos)"></span>Reembolsos</span><span class="filter-count">3</span></label>
+              <label class="filter-checkbox"><input type="checkbox" onchange="applyFilters()"><span class="flag-pill"><span class="dot" style="background:var(--s-facturacion)"></span>Facturación</span><span class="filter-count">11</span></label>
+              <label class="filter-checkbox"><input type="checkbox" onchange="applyFilters()"><span class="flag-pill"><span class="dot" style="background:var(--s-cancelado)"></span>Cancelado</span><span class="filter-count">2</span></label>
+            </div>
+            <div class="filter-section">
+              <div class="filter-section-label">Cliente</div>
+              <select class="filter-input" onchange="applyFilters()" style="height:36px">
+                <option value="">Todos los clientes</option>
+                <option>QUANTICO</option>
+                <option>WMC</option>
+                <option>GO ASSISTANCE</option>
+                <option>WTA</option>
+                <option>PASSPORT CARD</option>
+                <option>INTERMAC ASSISTANCE</option>
+              </select>
+            </div>
+            <div class="filter-section">
+              <div class="filter-section-label">Tipo de Caso</div>
+              <label class="filter-checkbox"><input type="checkbox" onchange="applyFilters()">Simple</label>
+              <label class="filter-checkbox"><input type="checkbox" onchange="applyFilters()">Medio</label>
+              <label class="filter-checkbox"><input type="checkbox" onchange="applyFilters()">Complejo</label>
+              <label class="filter-checkbox"><input type="checkbox" onchange="applyFilters()">Crítico</label>
+            </div>
+            <div class="filter-section">
+              <div class="filter-section-label">Operador</div>
+              <select class="filter-input" onchange="applyFilters()" style="height:36px">
+                <option value="">Todos</option>
+                <option>webadmin</option>
+                <option>luisgonzalez</option>
+                <option>mariabriceno</option>
+                <option>andyvelasco</option>
+                <option>josegallegos</option>
+              </select>
+            </div>
+            <div class="filter-section">
+              <div class="filter-section-label">Fecha de Creación</div>
+              <input class="filter-input" type="date" value="2026-08-01" onchange="applyFilters()">
+              <input class="filter-input" type="date" value="2026-08-11" onchange="applyFilters()">
+            </div>
+            <div class="filter-section">
+              <div class="filter-section-label">Continente</div>
+              <label class="filter-checkbox"><input type="checkbox" onchange="applyFilters()">América del Sur</label>
+              <label class="filter-checkbox"><input type="checkbox" onchange="applyFilters()">América del Norte</label>
+              <label class="filter-checkbox"><input type="checkbox" onchange="applyFilters()">Europa</label>
+              <label class="filter-checkbox"><input type="checkbox" onchange="applyFilters()">Asia</label>
+              <label class="filter-checkbox"><input type="checkbox" onchange="applyFilters()">África</label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cases Area -->
+        <div class="cases-area">
+          <!-- Toolbar -->
+          <div class="cases-toolbar">
+            <div class="search-box">
+              <span class="material-icons">search</span>
+              <input type="text" placeholder="Buscar por pasajero, cliente, ID de caso…" id="mainSearch" oninput="filterTable(this.value)">
+            </div>
+            <select class="sort-select" onchange="sortTable(this.value)">
+              <option value="date-desc">Más recientes primero</option>
+              <option value="date-asc">Más antiguos primero</option>
+              <option value="name">Por pasajero</option>
+              <option value="client">Por cliente</option>
+              <option value="status">Por estado</option>
+            </select>
+            <div class="view-toggle">
+              <button class="view-btn active" id="viewTable" onclick="setView('table')" data-tooltip="Vista tabla"><span class="material-icons">table_rows</span></button>
+              <button class="view-btn" id="viewCards" onclick="setView('cards')" data-tooltip="Vista tarjetas"><span class="material-icons">grid_view</span></button>
+            </div>
+          </div>
+
+          <!-- Info bar -->
+          <div class="cases-info">
+            <span>Mostrando <strong id="countShown">10</strong> de <strong>35</strong> registros</span>
+            <div class="flex gap-2 items-center">
+              <span class="chip active"><span class="material-icons">flag</span> Coordinar</span>
+              <span class="chip active"><span class="material-icons">flag</span> Seguimiento</span>
+              <span class="chip" onclick="this.classList.toggle('active')"><span class="material-icons">add</span> Más filtros</span>
+            </div>
+          </div>
+
+          <!-- TABLE VIEW -->
+          <div id="tableView">
+            <div class="cases-table-wrap">
+              <div class="table-container">
+                <table>
+                  <thead>
+                    <tr>
+                      <th><input type="checkbox" onclick="selectAll(this)" style="accent-color:var(--primary)"></th>
+                      <th>Estado</th>
+                      <th onclick="sortTable('id')" style="cursor:pointer">ID Caso ↕</th>
+                      <th onclick="sortTable('name')" style="cursor:pointer">Pasajero ↕</th>
+                      <th>Cliente</th>
+                      <th>Tipo</th>
+                      <th onclick="sortTable('date')" style="cursor:pointer">Fecha ↕</th>
+                      <th>Operador</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody id="casosTableBody">
+                    <!-- JS renders rows -->
+                  </tbody>
+                </table>
+              </div>
+              <div class="card-footer" style="justify-content:space-between;padding:12px 16px">
+                <span class="text-sm text-secondary"># Registros: <strong>35</strong></span>
+                <div class="pagination" id="paginacion"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- CARDS VIEW (hidden) -->
+          <div id="cardsView" style="display:none">
+            <div class="cases-card-grid" id="casosCardGrid"></div>
+            <div style="display:flex;justify-content:center;margin-top:16px">
+              <div class="pagination" id="paginacionCards"></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script>
+const CASOS = [
+  { id:'UMA-117822', name:'ROBERTO RAMOS',         client:'QUANTICO',          type:'Simple',  date:'2026-08-11', op:'webadmin',     status:'coordinar',   continent:'América Sur' },
+  { id:'VNA-117821', name:'JUAN SEBASTIAN VASQUEZ', client:'WMC',               type:'Medio',   date:'2026-08-11', op:'luisgonzalez', status:'seguimiento', continent:'América Sur' },
+  { id:'VNA-117820', name:'CARDOZO, CARLA MICAELA', client:'GO ASSISTANCE',     type:'Simple',  date:'2026-08-10', op:'luisgonzalez', status:'coordinar',   continent:'Europa' },
+  { id:'VNA-117819', name:'SARAH MILOUD',           client:'WTA',               type:'Complejo',date:'2026-08-10', op:'luisgonzalez', status:'seguimiento', continent:'Europa' },
+  { id:'VNA-117818', name:'NOA KESSARY',            client:'PASSPORT CARD',     type:'Simple',  date:'2026-08-10', op:'mariabriceno', status:'enviado',     continent:'América Norte' },
+  { id:'VNA-117817', name:'MARCOS MEJIAS PALACIOS', client:'WMC',               type:'Medio',   date:'2026-08-10', op:'andyvelasco',  status:'seguimiento', continent:'Europa' },
+  { id:'VNA-117816', name:'BRENDA DA SILVA COSTA',  client:'INTERMAC ASSISTANCE',type:'Simple', date:'2026-08-11', op:'josegallegos', status:'coordinado',  continent:'América Sur' },
+  { id:'VNA-117815', name:'NATALIYA KHARCHUK',      client:'WTA',               type:'Complejo',date:'2026-08-10', op:'angelvamonde', status:'enviado',     continent:'Europa' },
+  { id:'VNA-117814', name:'OMAR ANTONIO CACERES',   client:'PASSPORT CARD',     type:'Simple',  date:'2026-08-09', op:'luisgonzalez', status:'facturacion', continent:'América Norte' },
+  { id:'VNA-117813', name:'EDITH PAULINA GARCIA',   client:'GO ASSISTANCE',     type:'Medio',   date:'2026-08-09', op:'andyvelasco',  status:'descargos',   continent:'Europa' },
+];
+
+const statusConfig = {
+  coordinar:   { label:'Coordinar',        cls:'status-coordinar'   },
+  seguimiento: { label:'Seguimiento',      cls:'status-seguimiento' },
+  coordinado:  { label:'Caso Coordinado',  cls:'status-coordinado'  },
+  enviado:     { label:'IM Enviado',       cls:'status-enviado'     },
+  descargos:   { label:'Descargos',        cls:'status-descargos'   },
+  reembolsos:  { label:'Reembolsos',       cls:'status-reembolsos'  },
+  facturacion: { label:'Facturación',      cls:'status-facturacion' },
+  cancelado:   { label:'Cancelado',        cls:'status-cancelado'   },
+};
+
+const avatarColors = ['#667eea','#f093fb','#4facfe','#11998e','#F59E0B','#EF4444','#A855F7','#06B6D4','#22C55E','#64748B'];
+
+function initials(name) {
+  return name.split(/[ ,]+/).slice(0,2).map(w=>w[0]).join('').toUpperCase();
+}
+
+function renderTable(casos) {
+  const tbody = document.getElementById('casosTableBody');
+  tbody.innerHTML = casos.map((c,i) => {
+    const s = statusConfig[c.status];
+    const color = avatarColors[i % avatarColors.length];
+    return `<tr onclick="go('caso-detalle.html')">
+      <td><input type="checkbox" onclick="e=>e.stopPropagation()" style="accent-color:var(--primary)"></td>
+      <td><span class="status-badge ${s.cls}"><span class="flag-dot"></span>${s.label}</span></td>
+      <td><span class="case-id-link">${c.id}</span></td>
+      <td><span class="case-passenger">${c.name}</span></td>
+      <td class="case-client">${c.client}</td>
+      <td><span class="chip" style="font-size:12px">${c.type}</span></td>
+      <td class="date-cell">${c.date}</td>
+      <td class="operator-cell">${c.op}</td>
+      <td><div class="actions-cell">
+        <button class="action-icon" onclick="event.stopPropagation();go('caso-detalle.html')" data-tooltip="Editar"><span class="material-icons">edit</span></button>
+        <button class="action-icon" onclick="event.stopPropagation()" data-tooltip="Ver historial"><span class="material-icons">history</span></button>
+        <button class="action-icon danger" onclick="event.stopPropagation()" data-tooltip="Eliminar"><span class="material-icons">delete_outline</span></button>
+      </div></td>
+    </tr>`;
+  }).join('');
+  renderPagination('paginacion');
+}
+
+function renderCards(casos) {
+  const grid = document.getElementById('casosCardGrid');
+  grid.innerHTML = casos.map((c,i) => {
+    const s = statusConfig[c.status];
+    const color = avatarColors[i % avatarColors.length];
+    return `<div class="case-card" onclick="go('caso-detalle.html')">
+      <div class="case-card-header">
+        <div class="case-card-avatar" style="background:${color}">${initials(c.name)}</div>
+        <div class="case-card-meta">
+          <div class="case-card-name">${c.name}</div>
+          <div class="case-card-id">${c.id}</div>
+        </div>
+        <span class="status-badge ${s.cls}" style="align-self:flex-start"><span class="flag-dot"></span>${s.label}</span>
+      </div>
+      <div class="case-card-body">
+        <div class="case-card-field"><div class="case-card-field-label">Cliente</div><div class="case-card-field-value">${c.client}</div></div>
+        <div class="case-card-field"><div class="case-card-field-label">Tipo</div><div class="case-card-field-value">${c.type}</div></div>
+        <div class="case-card-field"><div class="case-card-field-label">Continente</div><div class="case-card-field-value">${c.continent}</div></div>
+        <div class="case-card-field"><div class="case-card-field-label">Fecha</div><div class="case-card-field-value">${c.date}</div></div>
+      </div>
+      <div class="case-card-footer">
+        <span class="text-xs text-secondary">Op: ${c.op}</span>
+        <div class="flex gap-2">
+          <button class="action-icon" onclick="event.stopPropagation()" data-tooltip="Historial"><span class="material-icons">history</span></button>
+          <button class="action-icon" onclick="event.stopPropagation();go('caso-detalle.html')" data-tooltip="Editar"><span class="material-icons">edit</span></button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  renderPagination('paginacionCards');
+}
+
+function renderPagination(id) {
+  const el = document.getElementById(id);
+  const pages = [1,2,3,4];
+  el.innerHTML = `<button class="page-btn"><span class="material-icons">chevron_left</span></button>` +
+    pages.map(p=>`<button class="page-btn ${p===1?'active':''}" onclick="this.parentElement.querySelectorAll('.page-btn').forEach(b=>b.classList.remove('active'));this.classList.add('active')">${p}</button>`).join('') +
+    `<button class="page-btn"><span class="material-icons">chevron_right</span></button>`;
+}
+
+function setView(v) {
+  const tableView = document.getElementById('tableView');
+  const cardsView = document.getElementById('cardsView');
+  document.getElementById('viewTable').classList.toggle('active', v==='table');
+  document.getElementById('viewCards').classList.toggle('active', v==='cards');
+  tableView.style.display = v==='table' ? 'block' : 'none';
+  cardsView.style.display = v==='cards' ? 'block' : 'none';
+}
+
+function filterTable(q) {
+  const filtered = CASOS.filter(c => !q || c.name.toLowerCase().includes(q.toLowerCase()) || c.id.toLowerCase().includes(q.toLowerCase()) || c.client.toLowerCase().includes(q.toLowerCase()));
+  renderTable(filtered);
+  renderCards(filtered);
+  document.getElementById('countShown').textContent = filtered.length;
+}
+
+function applyFilters() { filterTable(document.getElementById('mainSearch').value); }
+function sortTable(v) { applyFilters(); }
+function clearFilters() { applyFilters(); }
+function selectAll(cb) { document.querySelectorAll('#casosTableBody input[type=checkbox]').forEach(c=>c.checked=cb.checked); }
+function exportExcel() { alert('Exportando a Excel…'); }
+function go(url) { window.location.href = url; }
+function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); }
+
+renderTable(CASOS);
+renderCards(CASOS);
+</script>
+</body>
+</html>

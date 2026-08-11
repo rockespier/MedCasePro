@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MedCase Pro – Administración</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    .admin-layout { display: grid; grid-template-columns: 220px 1fr; gap: 20px; }
+    .admin-nav { background: var(--surface); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); border: 1px solid var(--divider-light); overflow: hidden; height: fit-content; position: sticky; top: 0; }
+    .admin-nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      cursor: pointer;
+      font-size: 14px;
+      color: var(--text-secondary);
+      transition: all 0.2s;
+      border-left: 3px solid transparent;
+    }
+    .admin-nav-item:hover { background: var(--bg); color: var(--primary); }
+    .admin-nav-item.active { background: var(--primary-50); color: var(--primary); font-weight: 500; border-left-color: var(--primary); }
+    .admin-nav-item .material-icons { font-size: 20px; }
+    .admin-nav-divider { height: 1px; background: var(--divider-light); margin: 4px 0; }
+    .admin-section { display: none; }
+    .admin-section.active { display: block; }
+
+    /* Usuarios */
+    .user-list-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--divider-light);
+      transition: background 0.15s;
+      cursor: pointer;
+    }
+    .user-list-item:hover { background: var(--primary-50); }
+    .user-list-item:last-child { border-bottom: none; }
+    .user-av {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 700;
+      color: white;
+      flex-shrink: 0;
+    }
+    .user-info-main { flex: 1; min-width: 0; }
+    .user-name-main { font-size: 14px; font-weight: 500; }
+    .user-role-main { font-size: 12px; color: var(--text-secondary); }
+    .role-chip {
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-weight: 500;
+    }
+    .role-admin { background: #E8EAF6; color: #3949AB; }
+    .role-supervisor { background: #E0F2F1; color: #00796B; }
+    .role-operator { background: var(--primary-50); color: var(--primary); }
+
+    /* Estados / situaciones */
+    .estado-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--divider-light);
+      cursor: grab;
+    }
+    .estado-row:last-child { border-bottom: none; }
+    .drag-handle { color: var(--text-disabled); cursor: grab; }
+    .drag-handle .material-icons { font-size: 20px; }
+    .estado-flag {
+      width: 24px; height: 24px;
+      border-radius: 5px;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+    .estado-orden {
+      width: 40px;
+      height: 32px;
+      border: 1.5px solid var(--divider);
+      border-radius: 6px;
+      text-align: center;
+      font-size: 13px;
+      background: var(--bg);
+    }
+
+    /* Permisos */
+    .perm-table { width: 100%; border-collapse: collapse; }
+    .perm-table th, .perm-table td { padding: 10px 14px; font-size: 13px; border-bottom: 1px solid var(--divider-light); text-align: left; }
+    .perm-table th { background: var(--bg); font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; color: var(--text-secondary); font-weight: 600; }
+    .perm-table tr:last-child td { border-bottom: none; }
+    .perm-check { accent-color: var(--primary); width: 16px; height: 16px; cursor: pointer; }
+
+    /* Nivel de servicio */
+    .sla-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--divider-light);
+    }
+    .sla-item:last-child { border-bottom: none; }
+    .sla-color { width: 16px; height: 16px; border-radius: 4px; flex-shrink: 0; }
+    .sla-name { font-size: 14px; font-weight: 500; flex: 1; }
+    .sla-input { height: 34px; width: 80px; border: 1.5px solid var(--divider); border-radius: 6px; padding: 0 8px; font-size: 13px; text-align: center; }
+
+    @media (max-width: 768px) { .admin-layout { grid-template-columns: 1fr; } .admin-nav { position: static; } }
+  </style>
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand" onclick="toggleSidebar()"><div class="brand-icon"><span class="material-icons">local_hospital</span></div><span class="brand-text">MedCase Pro</span></div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Principal</div>
+      <div class="nav-item" onclick="go('dashboard.html')"><span class="material-icons">dashboard</span><span class="nav-label">Dashboard</span></div>
+      <div class="nav-item" onclick="go('casos-lista.html')"><span class="material-icons">folder_open</span><span class="nav-label">Casos</span><span class="nav-badge">47</span></div>
+      <div class="nav-section-label">Gestión</div>
+      <div class="nav-item" onclick="go('clientes.html')"><span class="material-icons">business</span><span class="nav-label">Clientes</span></div>
+      <div class="nav-item" onclick="go('proveedores.html')"><span class="material-icons">local_pharmacy</span><span class="nav-label">Proveedores</span></div>
+      <div class="nav-item" onclick="go('facturacion.html')"><span class="material-icons">receipt_long</span><span class="nav-label">Facturación</span></div>
+      <div class="nav-section-label">Herramientas</div>
+      <div class="nav-item active"><span class="material-icons">admin_panel_settings</span><span class="nav-label">Administración</span></div>
+    </nav>
+    <div class="sidebar-bottom"><div class="user-card"><div class="user-avatar">WA</div><div class="user-info"><div class="user-name">Web Admin</div><div class="user-role">Administrador</div></div></div></div>
+  </aside>
+
+  <div class="main-area">
+    <header class="header">
+      <button class="header-toggle" onclick="toggleSidebar()"><span class="material-icons">menu</span></button>
+      <div><div class="page-title">Administración</div><div class="breadcrumb"><a href="dashboard.html">Inicio</a><span class="sep">›</span><span>Administración</span></div></div>
+      <div style="flex:1"></div>
+      <button class="icon-btn"><span class="material-icons">notifications_none</span><span class="notif-dot"></span></button>
+    </header>
+
+    <main class="content">
+      <div class="admin-layout">
+
+        <!-- Admin Nav -->
+        <div class="admin-nav">
+          <div style="padding:12px 16px;border-bottom:1px solid var(--divider-light)">
+            <span style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-secondary)">Configuración</span>
+          </div>
+          <div class="admin-nav-item active" onclick="switchSection('usuarios',this)"><span class="material-icons">people</span>Usuarios</div>
+          <div class="admin-nav-item" onclick="switchSection('roles',this)"><span class="material-icons">manage_accounts</span>Perfiles / Roles</div>
+          <div class="admin-nav-item" onclick="switchSection('permisos',this)"><span class="material-icons">security</span>Permisos por Rol</div>
+          <div class="admin-nav-divider"></div>
+          <div class="admin-nav-item" onclick="switchSection('estados',this)"><span class="material-icons">flag</span>Estados de Caso</div>
+          <div class="admin-nav-item" onclick="switchSection('tipos',this)"><span class="material-icons">category</span>Tipos de Caso</div>
+          <div class="admin-nav-item" onclick="switchSection('sla',this)"><span class="material-icons">speed</span>Nivel de Servicio</div>
+          <div class="admin-nav-divider"></div>
+          <div class="admin-nav-item" onclick="switchSection('parametros',this)"><span class="material-icons">settings</span>Parámetros</div>
+          <div class="admin-nav-item" onclick="switchSection('importar',this)"><span class="material-icons">upload_file</span>Importar Casos</div>
+        </div>
+
+        <!-- Admin Content -->
+        <div>
+
+          <!-- USUARIOS -->
+          <div class="admin-section active" id="sec-usuarios">
+            <div class="card">
+              <div class="card-header">
+                <span class="material-icons" style="color:var(--primary)">people</span>
+                <span class="card-title">Listado de Usuarios</span>
+                <button class="btn btn-primary btn-sm" onclick="showUserForm()"><span class="material-icons">add</span>Nuevo Usuario</button>
+              </div>
+              <div id="userList">
+                <!-- JS renders -->
+              </div>
+            </div>
+            <!-- Form -->
+            <div class="card mt-4" id="userForm" style="display:none">
+              <div class="card-header">
+                <span class="material-icons" style="color:var(--primary)">person_add</span>
+                <span class="card-title">Nuevo / Editar Usuario</span>
+                <button class="btn btn-outline btn-sm" onclick="document.getElementById('userForm').style.display='none'"><span class="material-icons">close</span></button>
+              </div>
+              <div class="card-body">
+                <div class="form-grid form-grid-2">
+                  <div class="form-group"><label class="form-label">Nombre Completo <span class="required">*</span></label><input type="text" class="form-control" placeholder="Nombre y apellido"></div>
+                  <div class="form-group"><label class="form-label">Usuario <span class="required">*</span></label><input type="text" class="form-control" placeholder="Ej. jramos"></div>
+                  <div class="form-group"><label class="form-label">Correo <span class="required">*</span></label><input type="email" class="form-control" placeholder="correo@empresa.com"></div>
+                  <div class="form-group"><label class="form-label">Perfil <span class="required">*</span></label>
+                    <select class="form-control">
+                      <option>Administrador</option>
+                      <option>Supervisor</option>
+                      <option selected>Operador de Asistencia</option>
+                    </select>
+                  </div>
+                  <div class="form-group"><label class="form-label">Contraseña</label><input type="password" class="form-control" placeholder="••••••••"></div>
+                  <div class="form-group"><label class="form-label">Confirmar Contraseña</label><input type="password" class="form-control" placeholder="••••••••"></div>
+                  <div class="form-group" style="flex-direction:row;align-items:center;gap:8px;padding-top:16px">
+                    <input type="checkbox" checked style="accent-color:var(--primary);width:16px;height:16px"><label class="form-label" style="margin:0">Activo</label>
+                  </div>
+                </div>
+              </div>
+              <div class="card-footer" style="justify-content:flex-end;gap:8px">
+                <button class="btn btn-outline btn-sm" onclick="document.getElementById('userForm').style.display='none'">Cancelar</button>
+                <button class="btn btn-primary btn-sm" onclick="saveUser()"><span class="material-icons">save</span>Guardar Usuario</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ROLES -->
+          <div class="admin-section" id="sec-roles">
+            <div class="card">
+              <div class="card-header">
+                <span class="material-icons" style="color:var(--primary)">manage_accounts</span>
+                <span class="card-title">Perfiles / Roles del Sistema</span>
+                <button class="btn btn-primary btn-sm"><span class="material-icons">add</span>Nuevo Perfil</button>
+              </div>
+              <div class="table-container">
+                <table>
+                  <thead><tr><th>ID</th><th>Nombre del Perfil</th><th>Descripción</th><th>Usuarios</th><th>Activo</th><th>Acciones</th></tr></thead>
+                  <tbody>
+                    <tr><td>1</td><td><strong>Administrador</strong></td><td>Acceso total al sistema</td><td><span class="status-badge status-coordinado" style="font-size:11px">2 usuarios</span></td><td><span class="status-badge status-enviado" style="font-size:11px">Sí</span></td><td><div class="actions-cell"><button class="action-icon"><span class="material-icons">edit</span></button></div></td></tr>
+                    <tr><td>2</td><td><strong>Supervisor</strong></td><td>Gestión de operadores y reportes</td><td><span class="status-badge status-coordinado" style="font-size:11px">3 usuarios</span></td><td><span class="status-badge status-enviado" style="font-size:11px">Sí</span></td><td><div class="actions-cell"><button class="action-icon"><span class="material-icons">edit</span></button></div></td></tr>
+                    <tr><td>3</td><td><strong>Operador de Asistencia</strong></td><td>Registro y gestión de casos</td><td><span class="status-badge status-coordinado" style="font-size:11px">14 usuarios</span></td><td><span class="status-badge status-enviado" style="font-size:11px">Sí</span></td><td><div class="actions-cell"><button class="action-icon"><span class="material-icons">edit</span></button></div></td></tr>
+                    <tr><td>4</td><td><strong>Solo Lectura</strong></td><td>Consulta sin modificaciones</td><td><span class="status-badge status-coordinado" style="font-size:11px">0 usuarios</span></td><td><span class="status-badge status-cancelado" style="font-size:11px">No</span></td><td><div class="actions-cell"><button class="action-icon"><span class="material-icons">edit</span></button></div></td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- PERMISOS -->
+          <div class="admin-section" id="sec-permisos">
+            <div class="card">
+              <div class="card-header">
+                <span class="material-icons" style="color:var(--primary)">security</span>
+                <span class="card-title">Permisos por Rol</span>
+                <select style="height:36px;border:1.5px solid var(--divider);border-radius:var(--radius-md);padding:0 12px;font-size:13px;background:white;cursor:pointer;outline:none">
+                  <option>Administrador</option>
+                  <option>Supervisor</option>
+                  <option selected>Operador de Asistencia</option>
+                </select>
+              </div>
+              <div class="table-container">
+                <table class="perm-table">
+                  <thead><tr><th>Módulo</th><th>Ver</th><th>Crear</th><th>Editar</th><th>Eliminar</th><th>Exportar</th></tr></thead>
+                  <tbody>
+                    <tr><td><strong>Casos</strong></td><td><input type="checkbox" class="perm-check" checked></td><td><input type="checkbox" class="perm-check" checked></td><td><input type="checkbox" class="perm-check" checked></td><td><input type="checkbox" class="perm-check"></td><td><input type="checkbox" class="perm-check" checked></td></tr>
+                    <tr><td><strong>Clientes</strong></td><td><input type="checkbox" class="perm-check" checked></td><td><input type="checkbox" class="perm-check"></td><td><input type="checkbox" class="perm-check"></td><td><input type="checkbox" class="perm-check"></td><td><input type="checkbox" class="perm-check"></td></tr>
+                    <tr><td><strong>Proveedores</strong></td><td><input type="checkbox" class="perm-check" checked></td><td><input type="checkbox" class="perm-check" checked></td><td><input type="checkbox" class="perm-check" checked></td><td><input type="checkbox" class="perm-check"></td><td><input type="checkbox" class="perm-check"></td></tr>
+                    <tr><td><strong>Facturación</strong></td><td><input type="checkbox" class="perm-check" checked></td><td><input type="checkbox" class="perm-check"></td><td><input type="checkbox" class="perm-check"></td><td><input type="checkbox" class="perm-check"></td><td><input type="checkbox" class="perm-check" checked></td></tr>
+                    <tr><td><strong>Usuarios</strong></td><td><input type="checkbox" class="perm-check"></td><td><input type="checkbox" class="perm-check"></td><td><input type="checkbox" class="perm-check"></td><td><input type="checkbox" class="perm-check"></td><td><input type="checkbox" class="perm-check"></td></tr>
+                    <tr><td><strong>Administración</strong></td><td><input type="checkbox" class="perm-check"></td><td><input type="checkbox" class="perm-check"></td><td><input type="checkbox" class="perm-check"></td><td><input type="checkbox" class="perm-check"></td><td><input type="checkbox" class="perm-check"></td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="card-footer" style="justify-content:flex-end">
+                <button class="btn btn-primary btn-sm" onclick="alert('✅ Permisos guardados')"><span class="material-icons">save</span>Guardar Permisos</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ESTADOS -->
+          <div class="admin-section" id="sec-estados">
+            <div class="card">
+              <div class="card-header">
+                <span class="material-icons" style="color:var(--primary)">flag</span>
+                <span class="card-title">Estados de Caso (Situaciones)</span>
+                <span class="text-secondary text-xs">Arrastra para reordenar</span>
+              </div>
+              <div id="estadosList">
+                <!-- JS renders -->
+              </div>
+              <!-- New estado form -->
+              <div style="padding:16px 20px;border-top:1px solid var(--divider-light);background:var(--bg)">
+                <div style="font-size:12px;font-weight:600;text-transform:uppercase;color:var(--text-secondary);margin-bottom:12px">Crear / Actualizar Estado</div>
+                <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">
+                  <div class="form-group"><label class="form-label">Descripción</label><input type="text" class="form-control" placeholder="Nombre del estado…" style="width:200px"></div>
+                  <div class="form-group"><label class="form-label">Icono / Color</label>
+                    <div style="display:flex;gap:6px">
+                      <div style="width:32px;height:32px;border-radius:6px;background:var(--s-coordinar);cursor:pointer;border:2px solid transparent" onclick="selectColor(this,'#F59E0B')"></div>
+                      <div style="width:32px;height:32px;border-radius:6px;background:var(--s-seguimiento);cursor:pointer" onclick="selectColor(this,'#06B6D4')"></div>
+                      <div style="width:32px;height:32px;border-radius:6px;background:var(--s-coordinado);cursor:pointer" onclick="selectColor(this,'#3B82F6')"></div>
+                      <div style="width:32px;height:32px;border-radius:6px;background:var(--s-enviado);cursor:pointer" onclick="selectColor(this,'#22C55E')"></div>
+                      <div style="width:32px;height:32px;border-radius:6px;background:var(--s-descargos);cursor:pointer" onclick="selectColor(this,'#A855F7')"></div>
+                      <div style="width:32px;height:32px;border-radius:6px;background:var(--s-reembolsos);cursor:pointer" onclick="selectColor(this,'#94A3B8')"></div>
+                      <div style="width:32px;height:32px;border-radius:6px;background:var(--s-facturacion);cursor:pointer" onclick="selectColor(this,'#64748B')"></div>
+                      <div style="width:32px;height:32px;border-radius:6px;background:var(--s-cancelado);cursor:pointer" onclick="selectColor(this,'#EF4444')"></div>
+                    </div>
+                  </div>
+                  <div class="form-group"><label class="form-label">Orden</label><input type="number" class="form-control" style="width:70px" value="9"></div>
+                  <div class="form-group" style="flex-direction:row;align-items:center;gap:6px;padding-bottom:1px">
+                    <input type="checkbox" checked style="accent-color:var(--primary);width:15px;height:15px"><label class="form-label" style="margin:0;white-space:nowrap">Activo</label>
+                  </div>
+                  <button class="btn btn-primary btn-sm" onclick="alert('✅ Estado guardado')"><span class="material-icons">save</span>Grabar Estado</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TIPOS DE CASO -->
+          <div class="admin-section" id="sec-tipos">
+            <div class="card">
+              <div class="card-header">
+                <span class="material-icons" style="color:var(--primary)">category</span>
+                <span class="card-title">Tipos de Caso</span>
+              </div>
+              <div class="table-container">
+                <table>
+                  <thead><tr><th>ID</th><th>Valor</th><th>Activo</th><th>Usuario</th><th>Creación</th><th>Acciones</th></tr></thead>
+                  <tbody>
+                    <tr><td>1</td><td><strong>Simple</strong></td><td><span class="status-badge status-enviado" style="font-size:11px">Sí</span></td><td>yeroan</td><td>25/02/2014</td><td><div class="actions-cell"><button class="action-icon"><span class="material-icons">edit</span></button><button class="action-icon danger"><span class="material-icons">delete_outline</span></button></div></td></tr>
+                    <tr><td>2</td><td><strong>Medio</strong></td><td><span class="status-badge status-enviado" style="font-size:11px">Sí</span></td><td>yeroan</td><td>25/02/2014</td><td><div class="actions-cell"><button class="action-icon"><span class="material-icons">edit</span></button><button class="action-icon danger"><span class="material-icons">delete_outline</span></button></div></td></tr>
+                    <tr><td>3</td><td><strong>Complejo</strong></td><td><span class="status-badge status-enviado" style="font-size:11px">Sí</span></td><td>yeroan</td><td>25/02/2014</td><td><div class="actions-cell"><button class="action-icon"><span class="material-icons">edit</span></button><button class="action-icon danger"><span class="material-icons">delete_outline</span></button></div></td></tr>
+                    <tr><td>5</td><td><strong>Crítico</strong></td><td><span class="status-badge status-enviado" style="font-size:11px">Sí</span></td><td>yeroan</td><td>16/04/2026</td><td><div class="actions-cell"><button class="action-icon"><span class="material-icons">edit</span></button><button class="action-icon danger"><span class="material-icons">delete_outline</span></button></div></td></tr>
+                    <tr><td>4</td><td><s style="color:var(--text-secondary)">Simple (duplicado)</s></td><td><span class="status-badge status-cancelado" style="font-size:11px">No</span></td><td>yeroan</td><td>24/03/2026</td><td><div class="actions-cell"><button class="action-icon"><span class="material-icons">edit</span></button><button class="action-icon danger"><span class="material-icons">delete_outline</span></button></div></td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div style="padding:14px 20px;border-top:1px solid var(--divider-light);background:var(--bg)">
+                <div style="font-size:12px;font-weight:600;text-transform:uppercase;color:var(--text-secondary);margin-bottom:12px">Crear Tipo</div>
+                <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">
+                  <div class="form-group"><label class="form-label">Valor</label><input type="text" class="form-control" placeholder="Nombre del tipo…" style="width:200px"></div>
+                  <div class="form-group" style="flex-direction:row;align-items:center;gap:6px;padding-bottom:1px">
+                    <input type="checkbox" checked style="accent-color:var(--primary);width:15px;height:15px"><label class="form-label" style="margin:0">Activo</label>
+                  </div>
+                  <button class="btn btn-primary btn-sm" onclick="alert('✅ Tipo guardado')"><span class="material-icons">add</span>Crear Tipo</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SLA -->
+          <div class="admin-section" id="sec-sla">
+            <div class="card">
+              <div class="card-header">
+                <span class="material-icons" style="color:var(--primary)">speed</span>
+                <span class="card-title">Nivel de Servicio (SLA)</span>
+              </div>
+              <div class="card-body">
+                <p class="text-secondary text-sm mb-4">Define los tiempos máximos de respuesta y atención por tipo de caso. El sistema generará alertas automáticas cuando se acerque al vencimiento.</p>
+                <div class="sla-item"><div class="sla-color" style="background:var(--s-cancelado)"></div><span class="sla-name">Casos Críticos</span><span class="text-secondary text-sm">Respuesta inicial: </span><input type="number" class="sla-input" value="1"><span class="text-sm text-secondary">hora(s)</span><input type="number" class="sla-input" value="24" style="margin-left:12px"><span class="text-sm text-secondary">cierre</span></div>
+                <div class="sla-item"><div class="sla-color" style="background:var(--s-coordinar)"></div><span class="sla-name">Casos Complejos</span><span class="text-secondary text-sm">Respuesta inicial: </span><input type="number" class="sla-input" value="4"><span class="text-sm text-secondary">hora(s)</span><input type="number" class="sla-input" value="72" style="margin-left:12px"><span class="text-sm text-secondary">cierre</span></div>
+                <div class="sla-item"><div class="sla-color" style="background:var(--s-seguimiento)"></div><span class="sla-name">Casos Medios</span><span class="text-secondary text-sm">Respuesta inicial: </span><input type="number" class="sla-input" value="8"><span class="text-sm text-secondary">hora(s)</span><input type="number" class="sla-input" value="120" style="margin-left:12px"><span class="text-sm text-secondary">cierre</span></div>
+                <div class="sla-item"><div class="sla-color" style="background:var(--s-enviado)"></div><span class="sla-name">Casos Simples</span><span class="text-secondary text-sm">Respuesta inicial: </span><input type="number" class="sla-input" value="24"><span class="text-sm text-secondary">hora(s)</span><input type="number" class="sla-input" value="168" style="margin-left:12px"><span class="text-sm text-secondary">cierre</span></div>
+              </div>
+              <div class="card-footer" style="justify-content:flex-end">
+                <button class="btn btn-primary btn-sm" onclick="alert('✅ SLA guardado')"><span class="material-icons">save</span>Guardar SLA</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- PARÁMETROS -->
+          <div class="admin-section" id="sec-parametros">
+            <div class="card">
+              <div class="card-header"><span class="material-icons" style="color:var(--primary)">settings</span><span class="card-title">Parámetros del Sistema</span></div>
+              <div class="card-body">
+                <div class="form-grid form-grid-2" style="gap:16px">
+                  <div class="form-group"><label class="form-label">Nombre del Sistema</label><input type="text" class="form-control" value="MedCase Pro"></div>
+                  <div class="form-group"><label class="form-label">Empresa Principal</label><select class="form-control"><option selected>UNIVERSAL MED ASSIST</option><option>VENEZERV ASSISTANCE</option></select></div>
+                  <div class="form-group"><label class="form-label">Prefijo de Casos</label><input type="text" class="form-control" value="UMA"></div>
+                  <div class="form-group"><label class="form-label">Moneda Base</label><select class="form-control"><option>USD</option><option>EUR</option><option>ARS</option></select></div>
+                  <div class="form-group"><label class="form-label">Zona Horaria</label><select class="form-control"><option>America/Lima (UTC-5)</option><option>America/Caracas (UTC-4)</option></select></div>
+                  <div class="form-group"><label class="form-label">Idioma del Sistema</label><select class="form-control"><option>Español</option><option>Inglés</option><option>Portugués</option></select></div>
+                  <div class="form-group form-col-2"><label class="form-label">Mensaje de Aviso (Dashboard)</label><textarea class="form-control" rows="2">Por favor no dejar casos pendientes</textarea></div>
+                </div>
+              </div>
+              <div class="card-footer" style="justify-content:flex-end">
+                <button class="btn btn-primary btn-sm" onclick="alert('✅ Parámetros guardados')"><span class="material-icons">save</span>Guardar</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- IMPORTAR -->
+          <div class="admin-section" id="sec-importar">
+            <div class="card">
+              <div class="card-header"><span class="material-icons" style="color:var(--primary)">upload_file</span><span class="card-title">Importar Casos desde Excel</span></div>
+              <div class="card-body">
+                <div class="alert alert-info"><span class="material-icons">info</span>Descarga la plantilla Excel, complétala con los datos de los casos y súbela aquí para importación masiva.</div>
+                <div style="display:flex;gap:12px;margin-top:16px;flex-wrap:wrap">
+                  <button class="btn btn-outline"><span class="material-icons">download</span>Descargar Plantilla</button>
+                  <button class="btn btn-primary"><span class="material-icons">upload</span>Seleccionar Archivo</button>
+                </div>
+                <div style="margin-top:20px;background:var(--bg);border-radius:var(--radius-md);padding:16px">
+                  <div style="font-size:13px;font-weight:600;margin-bottom:8px">Última importación</div>
+                  <div style="font-size:13px;color:var(--text-secondary)">Fecha: 05/08/2026 · Archivo: casos_agosto_2026.xlsx · 48 casos importados · 2 errores</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script>
+const USUARIOS = [
+  { name:'Jairo Huaman Lara',   user:'jhuaman',      role:'Administrador',         color:'#0D47A1', roleClass:'role-admin'     },
+  { name:'Luis González',        user:'luisgonzalez', role:'Operador de Asistencia', color:'#1565C0', roleClass:'role-operator'  },
+  { name:'María Briceño',        user:'mariabriceno', role:'Operador de Asistencia', color:'#7B1FA2', roleClass:'role-operator'  },
+  { name:'Andy Velasco',         user:'andyvelasco',  role:'Operador de Asistencia', color:'#2E7D32', roleClass:'role-operator'  },
+  { name:'José Gallegos',        user:'josegallegos', role:'Operador de Asistencia', color:'#E65100', roleClass:'role-operator'  },
+  { name:'Andrea Arbulu',        user:'andreaarb',    role:'Supervisor',            color:'#00796B', roleClass:'role-supervisor' },
+  { name:'Cristina Acosta',      user:'criacosta',    role:'Operador de Asistencia', color:'#5D4037', roleClass:'role-operator'  },
+  { name:'Web Admin',            user:'webadmin',     role:'Administrador',         color:'#37474F', roleClass:'role-admin'     },
+];
+
+const ESTADOS = [
+  { id:1,  label:'COORDINAR',           color:'#F59E0B', orden:1, activo:true  },
+  { id:20, label:'SEGUIMIENTO/PENDIENTE',color:'#06B6D4', orden:2, activo:true  },
+  { id:11, label:'CASO COORDINADO',     color:'#3B82F6', orden:4, activo:true  },
+  { id:2,  label:'IM ENVIADO',          color:'#22C55E', orden:5, activo:true  },
+  { id:5,  label:'DESCARGOS',           color:'#A855F7', orden:6, activo:true  },
+  { id:12, label:'REEMBOLSOS',          color:'#94A3B8', orden:7, activo:true  },
+  { id:4,  label:'FACTURACIÓN',         color:'#64748B', orden:8, activo:true  },
+  { id:7,  label:'CANCELADO',           color:'#EF4444', orden:9, activo:true  },
+];
+
+function renderUsers() {
+  document.getElementById('userList').innerHTML = USUARIOS.map(u => `
+    <div class="user-list-item">
+      <div class="user-av" style="background:${u.color}">${u.name.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase()}</div>
+      <div class="user-info-main">
+        <div class="user-name-main">${u.name}</div>
+        <div class="user-role-main">${u.user} · Creado por: Jairo Huaman Lara</div>
+      </div>
+      <span class="role-chip ${u.roleClass}">${u.role}</span>
+      <div class="actions-cell">
+        <button class="action-icon" onclick=""><span class="material-icons">edit</span></button>
+        <button class="action-icon danger" onclick=""><span class="material-icons">delete_outline</span></button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderEstados() {
+  document.getElementById('estadosList').innerHTML = ESTADOS.map(e => `
+    <div class="estado-row">
+      <div class="drag-handle"><span class="material-icons">drag_indicator</span></div>
+      <div class="estado-flag" style="background:${e.color}"></div>
+      <span style="flex:1;font-size:14px;font-weight:500">${e.label}</span>
+      <span class="text-secondary text-sm">ID: ${e.id}</span>
+      <input type="number" class="estado-orden" value="${e.orden}" min="1">
+      <span class="status-badge ${e.activo ? 'status-enviado' : 'status-cancelado'}" style="font-size:11px">${e.activo ? 'Activo' : 'Inactivo'}</span>
+      <div class="actions-cell">
+        <button class="action-icon"><span class="material-icons">edit</span></button>
+        <button class="action-icon danger"><span class="material-icons">delete_outline</span></button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function switchSection(id, el) {
+  document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.admin-nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('sec-'+id).classList.add('active');
+  el.classList.add('active');
+}
+
+function showUserForm() {
+  const f = document.getElementById('userForm');
+  f.style.display = f.style.display === 'none' ? 'block' : 'none';
+  if(f.style.display==='block') f.scrollIntoView({behavior:'smooth'});
+}
+function saveUser() { alert('✅ Usuario guardado'); document.getElementById('userForm').style.display='none'; }
+function selectColor(el, c) { document.querySelectorAll('.sla-color-btn').forEach(b=>b.style.outline='none'); el.style.outline = '3px solid #1565C0'; }
+function go(url) { window.location.href = url; }
+function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); }
+
+renderUsers();
+renderEstados();
+</script>
+</body>
+</html>

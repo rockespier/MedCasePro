@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MedCase Pro – Proveedores</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    .split-layout { display: grid; grid-template-columns: 1fr 420px; gap: 20px; align-items: start; }
+    .prov-card {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--divider-light);
+      box-shadow: var(--shadow-sm);
+      cursor: pointer;
+      padding: 16px;
+      transition: all 0.2s;
+      display: flex;
+      gap: 14px;
+    }
+    .prov-card:hover { box-shadow: var(--shadow-md); border-color: var(--primary-100); transform: translateY(-1px); }
+    .prov-card.selected { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(21,101,192,0.2); }
+    .prov-icon {
+      width: 48px; height: 48px;
+      border-radius: 12px;
+      background: var(--primary-50);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .prov-icon .material-icons { font-size: 26px; color: var(--primary); }
+    .prov-main { flex: 1; min-width: 0; }
+    .prov-name { font-size: 14px; font-weight: 600; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .prov-meta { font-size: 12px; color: var(--text-secondary); margin-top: 3px; display: flex; gap: 10px; flex-wrap: wrap; }
+    .prov-meta-item { display: flex; align-items: center; gap: 4px; }
+    .prov-meta-item .material-icons { font-size: 14px; }
+    .prov-tags { display: flex; gap: 4px; margin-top: 6px; flex-wrap: wrap; }
+    .spec-tag { font-size: 11px; background: var(--bg); border: 1px solid var(--divider); border-radius: 4px; padding: 1px 7px; color: var(--text-secondary); }
+    .priority-stars { display: flex; gap: 2px; }
+    .priority-stars .material-icons { font-size: 14px; color: #F59E0B; }
+    .prov-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; }
+    .prov-detail-card {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      border: 1px solid var(--divider-light);
+      position: sticky;
+      top: 0;
+      overflow: hidden;
+    }
+    .prov-detail-header {
+      background: linear-gradient(135deg, #0D47A1, #1976D2);
+      padding: 20px;
+      color: white;
+    }
+    .prov-detail-avatar {
+      width: 60px; height: 60px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 12px;
+      border: 2px solid rgba(255,255,255,0.3);
+    }
+    .prov-detail-avatar .material-icons { font-size: 32px; }
+    .form-section { padding: 16px 20px; border-bottom: 1px solid var(--divider-light); }
+    .form-section:last-child { border-bottom: none; }
+    .service-list-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--divider-light);
+      font-size: 13px;
+    }
+    .service-list-item:last-child { border-bottom: none; }
+    @media (max-width: 1000px) { .split-layout { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand" onclick="toggleSidebar()"><div class="brand-icon"><span class="material-icons">local_hospital</span></div><span class="brand-text">MedCase Pro</span></div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Principal</div>
+      <div class="nav-item" onclick="go('dashboard.html')"><span class="material-icons">dashboard</span><span class="nav-label">Dashboard</span></div>
+      <div class="nav-item" onclick="go('casos-lista.html')"><span class="material-icons">folder_open</span><span class="nav-label">Casos</span><span class="nav-badge">47</span></div>
+      <div class="nav-section-label">Gestión</div>
+      <div class="nav-item" onclick="go('clientes.html')"><span class="material-icons">business</span><span class="nav-label">Clientes</span></div>
+      <div class="nav-item active"><span class="material-icons">local_pharmacy</span><span class="nav-label">Proveedores</span></div>
+      <div class="nav-item" onclick="go('facturacion.html')"><span class="material-icons">receipt_long</span><span class="nav-label">Facturación</span></div>
+      <div class="nav-section-label">Herramientas</div>
+      <div class="nav-item" onclick="go('administracion.html')"><span class="material-icons">admin_panel_settings</span><span class="nav-label">Administración</span></div>
+    </nav>
+    <div class="sidebar-bottom"><div class="user-card"><div class="user-avatar">WA</div><div class="user-info"><div class="user-name">Web Admin</div><div class="user-role">Administrador</div></div></div></div>
+  </aside>
+
+  <div class="main-area">
+    <header class="header">
+      <button class="header-toggle" onclick="toggleSidebar()"><span class="material-icons">menu</span></button>
+      <div><div class="page-title">Proveedores</div><div class="breadcrumb"><a href="dashboard.html">Inicio</a><span class="sep">›</span><span>Proveedores</span></div></div>
+      <div style="flex:1"></div>
+      <div class="header-actions">
+        <button class="btn btn-primary" onclick="showNewForm()"><span class="material-icons">add</span>Nuevo Proveedor</button>
+        <button class="icon-btn"><span class="material-icons">notifications_none</span><span class="notif-dot"></span></button>
+      </div>
+    </header>
+
+    <main class="content">
+      <!-- Toolbar -->
+      <div style="display:flex;gap:12px;align-items:center;margin-bottom:20px;flex-wrap:wrap">
+        <div class="header-search" style="max-width:320px;flex:1">
+          <span class="material-icons search-icon">search</span>
+          <input type="text" placeholder="Buscar por nombre, ciudad, especialidad…" oninput="filterProveedores(this.value)">
+        </div>
+        <select class="sort-select" style="height:40px;border:1.5px solid var(--divider);border-radius:var(--radius-md);padding:0 12px;font-family:Roboto,sans-serif;background:white;cursor:pointer;outline:none">
+          <option>Todos los países</option>
+          <option>BRASIL</option>
+          <option>COLOMBIA</option>
+          <option>ARGENTINA</option>
+          <option>MEXICO</option>
+          <option>ESTADOS UNIDOS</option>
+        </select>
+        <select class="sort-select" style="height:40px;border:1.5px solid var(--divider);border-radius:var(--radius-md);padding:0 12px;font-family:Roboto,sans-serif;background:white;cursor:pointer;outline:none">
+          <option>Todas las especialidades</option>
+          <option>CARDIOLOGÍA</option>
+          <option>DERMATOLOGÍA</option>
+          <option>ODONTOLOGÍA</option>
+          <option>EMERGENCIAS</option>
+          <option>TRAUMATOLOGÍA</option>
+        </select>
+        <div class="chip active">Solo activos</div>
+        <span class="text-secondary text-sm">4,314 registros</span>
+      </div>
+
+      <div class="split-layout">
+        <!-- Provider List -->
+        <div>
+          <div class="prov-grid" id="provGrid">
+            <!-- JS renders -->
+          </div>
+          <div style="display:flex;justify-content:center;margin-top:16px">
+            <div class="pagination">
+              <button class="page-btn"><span class="material-icons">chevron_left</span></button>
+              <button class="page-btn active">1</button>
+              <button class="page-btn">2</button>
+              <button class="page-btn">3</button>
+              <span style="padding:0 4px;color:var(--text-secondary);align-self:center">…</span>
+              <button class="page-btn">432</button>
+              <button class="page-btn"><span class="material-icons">chevron_right</span></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Provider Detail / Form -->
+        <div id="provDetailPanel">
+          <div class="prov-detail-card">
+            <div class="prov-detail-header" id="provDetailHeader">
+              <div class="prov-detail-avatar"><span class="material-icons">local_pharmacy</span></div>
+              <div style="font-size:18px;font-weight:700" id="provDetailName">AB DERMATOLOGIA</div>
+              <div style="font-size:13px;opacity:0.75;margin-top:4px">BRASIL · FLORIANOPOLIS</div>
+              <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+                <span class="chip" style="background:rgba(255,255,255,0.15);color:white;border-color:rgba(255,255,255,0.25)">DERMATOLOGIA</span>
+                <span style="font-size:12px;opacity:0.7;align-self:center">Prioridad 5 ★</span>
+              </div>
+            </div>
+
+            <!-- Form tabs -->
+            <div style="display:flex;border-bottom:1px solid var(--divider-light);padding:0 16px;background:var(--bg)">
+              <div class="tab-item active" id="ptab1" onclick="switchProvTab('info',this)" style="padding:10px 14px;font-size:13px">Información</div>
+              <div class="tab-item" id="ptab2" onclick="switchProvTab('servicios',this)" style="padding:10px 14px;font-size:13px">Servicios</div>
+              <div class="tab-item" id="ptab3" onclick="switchProvTab('ubicaciones',this)" style="padding:10px 14px;font-size:13px">Ubicaciones</div>
+            </div>
+
+            <!-- Info Tab -->
+            <div id="ptab-info">
+              <div class="form-section">
+                <div class="form-grid form-grid-2" style="gap:12px">
+                  <div class="form-group form-col-2">
+                    <label class="form-label">Razón Social <span class="required">*</span></label>
+                    <input type="text" class="form-control" value="AB DERMATOLOGIA">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Teléfono 1 <span class="required">*</span></label>
+                    <input type="text" class="form-control" value="554830283118">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Teléfono 2</label>
+                    <input type="text" class="form-control" placeholder="Opcional">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Correo <span class="required">*</span></label>
+                    <input type="email" class="form-control" value="NO INDICA">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Web</label>
+                    <input type="text" class="form-control" placeholder="https://…">
+                  </div>
+                  <div class="form-group form-col-2">
+                    <label class="form-label">Dirección</label>
+                    <input type="text" class="form-control" placeholder="Dirección completa">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Horario</label>
+                    <input type="text" class="form-control" value="DE LUNES A VIERNES DE 8 A 6">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Especialidad</label>
+                    <input type="text" class="form-control" value="DERMATOLOGIA">
+                    <div class="form-hint">Separa múltiples con coma</div>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Calificación / Prioridad</label>
+                    <select class="form-control">
+                      <option>1 ★</option><option>2 ★★</option><option>3 ★★★</option><option>4 ★★★★</option><option selected>5 ★★★★★</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Precio Base (USD)</label>
+                    <input type="number" class="form-control" value="100">
+                  </div>
+                  <div class="form-group form-col-2">
+                    <label class="form-label">Nota de Pago</label>
+                    <input type="text" class="form-control" value="PAGO PREVIO">
+                  </div>
+                  <div class="form-group form-col-2">
+                    <label class="form-label">Datos para el Pago</label>
+                    <textarea class="form-control" rows="2" placeholder="IBAN, cuenta bancaria, etc."></textarea>
+                  </div>
+                  <div class="form-group form-col-2" style="flex-direction:row;align-items:center;gap:10px">
+                    <input type="checkbox" checked style="accent-color:var(--primary);width:16px;height:16px">
+                    <label class="form-label" style="margin:0">Activo</label>
+                  </div>
+                </div>
+              </div>
+              <div style="padding:14px 20px;display:flex;gap:8px;justify-content:flex-end;border-top:1px solid var(--divider-light)">
+                <button class="btn btn-outline btn-sm" onclick="clearForm()"><span class="material-icons">clear</span>Limpiar</button>
+                <button class="btn btn-primary btn-sm" onclick="saveProveedor()"><span class="material-icons">save</span>Grabar Proveedor</button>
+              </div>
+            </div>
+
+            <!-- Servicios Tab -->
+            <div id="ptab-servicios" style="display:none">
+              <div class="form-section">
+                <div style="font-size:13px;font-weight:600;margin-bottom:12px;color:var(--text-secondary)">Servicios registrados del proveedor</div>
+                <div class="service-list-item"><span>DERMATOLOGIA</span><span class="text-secondary text-xs">ID 1315</span><button class="action-icon danger" style="width:28px;height:28px"><span class="material-icons" style="font-size:16px">delete_outline</span></button></div>
+                <div class="service-list-item"><span>CONSULTA GENERAL</span><span class="text-secondary text-xs">ID 1316</span><button class="action-icon danger" style="width:28px;height:28px"><span class="material-icons" style="font-size:16px">delete_outline</span></button></div>
+                <div style="display:flex;gap:8px;margin-top:14px">
+                  <input type="text" class="form-control" placeholder="Nuevo servicio…" style="flex:1">
+                  <button class="btn btn-primary btn-sm btn-icon" onclick=""><span class="material-icons">add</span></button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Ubicaciones Tab -->
+            <div id="ptab-ubicaciones" style="display:none">
+              <div class="form-section">
+                <div style="font-size:13px;font-weight:600;margin-bottom:12px;color:var(--text-secondary)">Países y ciudades de atención</div>
+                <div style="background:var(--bg);border-radius:var(--radius-md);padding:10px 12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center">
+                  <span style="font-size:13px"><strong>BRASIL</strong> · FLORIANOPOLIS</span>
+                  <button class="action-icon danger" style="width:28px;height:28px"><span class="material-icons" style="font-size:16px">close</span></button>
+                </div>
+                <div class="form-grid form-grid-2" style="gap:10px;margin-top:14px">
+                  <div class="form-group">
+                    <label class="form-label">País</label>
+                    <select class="form-control"><option>Seleccionar…</option><option>BRASIL</option><option>ARGENTINA</option><option>COLOMBIA</option></select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Ciudades</label>
+                    <input type="text" class="form-control" placeholder="Ciudad1, Ciudad2, …">
+                  </div>
+                </div>
+                <button class="btn btn-secondary btn-sm mt-3" onclick=""><span class="material-icons">add_location</span>Agregar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+</div>
+
+<script>
+const PROVEEDORES = [
+  { name:'AB DERMATOLOGIA',          city:'FLORIANOPOLIS', country:'BRASIL',     phone:'554830283118', specs:['DERMATOLOGIA'],             priority:5, active:true  },
+  { name:'506 URGENT AND MEDICAL',   city:'COBANO',        country:'COSTA RICA', phone:'50689400087',  specs:['EMERGENCIAS','URGENCIAS'],   priority:4, active:true  },
+  { name:'AMBULANCIAS BIO BIO',      city:'CONCEPCION',    country:'CHILE',      phone:'56977397056',  specs:['TRASLADOS'],                 priority:3, active:true  },
+  { name:'CENTRE MEDICAL ST SAUVEUR',city:'LILLE',         country:'FRANCIA',    phone:'33320851818',  specs:['MEDICINA GENERAL','CIRUGÍA'],priority:5, active:true  },
+  { name:'DENTISTA GUATEMALA',       city:'GUATEMALA',     country:'GUATEMALA',  phone:'50222697700',  specs:['ODONTOLOGÍA'],               priority:3, active:true  },
+  { name:'HOSPITAL DE MÉRIDA',       city:'BADAJOZ',       country:'ESPAÑA',     phone:'34924381000',  specs:['TRAUMATOLOGÍA','UCI'],        priority:5, active:true  },
+  { name:'RAFFLES MEDICAL T3',       city:'SINGAPUR',      country:'SINGAPUR',   phone:'62418818',     specs:['MEDICINA GENERAL'],          priority:4, active:false },
+  { name:'AMANA CARE WALK IN CLINIC',city:'DAVENPORT',     country:'EEUU',       phone:'5633887000',   specs:['PEDIATRÍA','MEDICINA'],      priority:3, active:true  },
+  { name:'ANILLO DENTAL CENTER',     city:'MIAMI',         country:'EEUU',       phone:'13053825000',  specs:['ODONTOLOGÍA'],               priority:4, active:true  },
+];
+
+function renderProveedores(list) {
+  const grid = document.getElementById('provGrid');
+  grid.innerHTML = list.map((p,i) => `
+    <div class="prov-card ${i===0?'selected':''}" onclick="selectProv(this,'${p.name}','${p.city}','${p.country}')">
+      <div class="prov-icon"><span class="material-icons">local_pharmacy</span></div>
+      <div class="prov-main">
+        <div class="prov-name">${p.name}</div>
+        <div class="prov-meta">
+          <span class="prov-meta-item"><span class="material-icons">location_on</span>${p.city}, ${p.country}</span>
+          <span class="prov-meta-item"><span class="material-icons">phone</span>${p.phone}</span>
+        </div>
+        <div class="prov-tags">
+          ${p.specs.map(s=>`<span class="spec-tag">${s}</span>`).join('')}
+          ${!p.active ? '<span class="spec-tag" style="background:#FFEBEE;color:#C62828;border-color:#FFCDD2">INACTIVO</span>' : ''}
+        </div>
+      </div>
+      <div class="priority-stars">${'<span class="material-icons">star</span>'.repeat(p.priority)}</div>
+    </div>
+  `).join('');
+}
+
+function selectProv(el, name, city, country) {
+  document.querySelectorAll('.prov-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('provDetailName').textContent = name;
+  document.querySelector('.prov-detail-header div:nth-child(3)').textContent = country + ' · ' + city;
+}
+
+function filterProveedores(q) {
+  const filtered = PROVEEDORES.filter(p =>
+    !q || p.name.toLowerCase().includes(q.toLowerCase()) ||
+    p.city.toLowerCase().includes(q.toLowerCase()) ||
+    p.country.toLowerCase().includes(q.toLowerCase()) ||
+    p.specs.some(s => s.toLowerCase().includes(q.toLowerCase()))
+  );
+  renderProveedores(filtered);
+}
+
+function switchProvTab(id, el) {
+  ['info','servicios','ubicaciones'].forEach(t => {
+    const el2 = document.getElementById('ptab-'+t);
+    if(el2) el2.style.display = t===id ? 'block' : 'none';
+  });
+  document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function showNewForm() {
+  document.querySelectorAll('.prov-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('provDetailName').textContent = 'Nuevo Proveedor';
+  document.querySelector('.prov-detail-header div:nth-child(3)').textContent = 'Ingresa los datos del proveedor';
+  document.querySelector('[value="AB DERMATOLOGIA"]').value = '';
+}
+function clearForm() {}
+function saveProveedor() { alert('✅ Proveedor guardado correctamente'); }
+function go(url) { window.location.href = url; }
+function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); }
+
+renderProveedores(PROVEEDORES);
+</script>
+</body>
+</html>

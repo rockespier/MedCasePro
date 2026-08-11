@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MedCase Pro – Índice de Prototipos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <style>
+    :root { --primary:#1565C0; --primary-dark:#0D47A1; --primary-50:#E3F2FD; --bg:#F0F4F8; --surface:#FFFFFF; --text-primary:#1A2332; --text-secondary:#546E7A; --divider:#E0E0E0; }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Roboto',sans-serif;background:var(--bg);color:var(--text-primary);min-height:100vh}
+    header{background:linear-gradient(135deg,#0D47A1,#1565C0,#1976D2);padding:40px 32px;text-align:center;color:white}
+    .hero-icon{width:80px;height:80px;background:rgba(255,255,255,0.15);border-radius:20px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;border:2px solid rgba(255,255,255,0.25)}
+    .hero-icon .material-icons{font-size:44px}
+    h1{font-size:32px;font-weight:700;margin-bottom:8px}
+    .subtitle{font-size:16px;opacity:0.8;margin-bottom:20px}
+    .tech-badges{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+    .tech-badge{background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);padding:6px 14px;border-radius:20px;font-size:13px}
+    .content{max-width:1100px;margin:0 auto;padding:40px 24px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px}
+    .card{background:var(--surface);border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);border:1px solid var(--divider);cursor:pointer;transition:all 0.25s;text-decoration:none;color:inherit;display:block}
+    .card:hover{box-shadow:0 8px 32px rgba(21,101,192,0.2);transform:translateY(-4px);border-color:#BBDEFB}
+    .card-top{height:6px}
+    .card-body{padding:20px}
+    .card-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:14px}
+    .card-icon .material-icons{font-size:26px}
+    .card-title{font-size:17px;font-weight:700;margin-bottom:6px}
+    .card-desc{font-size:13px;color:var(--text-secondary);line-height:1.6;margin-bottom:14px}
+    .card-tags{display:flex;gap:6px;flex-wrap:wrap}
+    .tag{font-size:11px;background:var(--bg);border:1px solid var(--divider);padding:2px 8px;border-radius:4px;color:var(--text-secondary)}
+    .card-footer-inner{padding:12px 20px;background:var(--bg);display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--divider)}
+    .card-footer-inner span{font-size:12px;color:var(--text-secondary)}
+    .card-footer-inner .material-icons{color:var(--primary)}
+    .section-title{font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-secondary);margin-bottom:20px;margin-top:40px;padding-bottom:8px;border-bottom:2px solid var(--divider)}
+    .section-title:first-child{margin-top:0}
+    footer{text-align:center;padding:32px;color:var(--text-secondary);font-size:13px}
+    @media(max-width:600px){.grid{grid-template-columns:1fr}.content{padding:24px 16px}}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="hero-icon"><span class="material-icons">local_hospital</span></div>
+    <h1>MedCase Pro</h1>
+    <div class="subtitle">Prototipos UI/UX – Sistema de Gestión de Casos de Atención Médica</div>
+    <div class="tech-badges">
+      <span class="tech-badge">🔵 Angular 17 + PWA</span>
+      <span class="tech-badge">⚙️ .NET 8 Backend</span>
+      <span class="tech-badge">🎨 Angular Material</span>
+      <span class="tech-badge">📱 Responsive</span>
+      <span class="tech-badge">🚩 Sistema de Banderas</span>
+    </div>
+  </header>
+
+  <div class="content">
+
+    <div class="section-title">Autenticación y Visión General</div>
+    <div class="grid">
+      <a href="login.html" class="card">
+        <div class="card-top" style="background:linear-gradient(90deg,#1565C0,#1976D2)"></div>
+        <div class="card-body">
+          <div class="card-icon" style="background:#E3F2FD"><span class="material-icons" style="color:#1565C0">login</span></div>
+          <div class="card-title">Login</div>
+          <div class="card-desc">Pantalla de inicio de sesión con validación, mostrar/ocultar contraseña y panel de marca con características del sistema.</div>
+          <div class="card-tags"><span class="tag">Auth</span><span class="tag">Seguridad</span><span class="tag">SSL</span></div>
+        </div>
+        <div class="card-footer-inner"><span>login.html</span><span class="material-icons">arrow_forward</span></div>
+      </a>
+
+      <a href="dashboard.html" class="card">
+        <div class="card-top" style="background:linear-gradient(90deg,#F59E0B,#22C55E)"></div>
+        <div class="card-body">
+          <div class="card-icon" style="background:#FFF8E1"><span class="material-icons" style="color:#F59E0B">dashboard</span></div>
+          <div class="card-title">Dashboard Principal</div>
+          <div class="card-desc">KPIs en tiempo real, pipeline de estados con banderas de color, actividad reciente, mis tareas, casos recientes y rendimiento de operadores.</div>
+          <div class="card-tags"><span class="tag">KPIs</span><span class="tag">Pipeline</span><span class="tag">Actividad</span><span class="tag">Tareas</span></div>
+        </div>
+        <div class="card-footer-inner"><span>dashboard.html</span><span class="material-icons">arrow_forward</span></div>
+      </a>
+    </div>
+
+    <div class="section-title">Gestión de Casos</div>
+    <div class="grid">
+      <a href="casos-lista.html" class="card">
+        <div class="card-top" style="background:linear-gradient(90deg,#3B82F6,#06B6D4)"></div>
+        <div class="card-body">
+          <div class="card-icon" style="background:#EFF6FF"><span class="material-icons" style="color:#3B82F6">folder_open</span></div>
+          <div class="card-title">Listado de Casos</div>
+          <div class="card-desc">Tabla con vista dual (tabla/tarjetas), filtros avanzados por estado/cliente/operador/fecha, búsqueda en tiempo real, exportar a Excel y paginación.</div>
+          <div class="card-tags"><span class="tag">Filtros</span><span class="tag">Vista tabla</span><span class="tag">Vista tarjetas</span><span class="tag">Exportar</span></div>
+        </div>
+        <div class="card-footer-inner"><span>casos-lista.html</span><span class="material-icons">arrow_forward</span></div>
+      </a>
+
+      <a href="caso-registro.html" class="card">
+        <div class="card-top" style="background:linear-gradient(90deg,#0D47A1,#1976D2)"></div>
+        <div class="card-body">
+          <div class="card-icon" style="background:#E3F2FD"><span class="material-icons" style="color:#1565C0">assignment</span></div>
+          <div class="card-title">Registro / Edición de Caso</div>
+          <div class="card-desc">Formulario completo con: código auto-generado, selector visual de estado (banderas), datos del pasajero, datos de cobertura, pestaña de servicios con cálculo automático de costos, incidencias/conversaciones y adjuntos. Panel lateral con resumen y cronología.</div>
+          <div class="card-tags"><span class="tag">Multi-pestaña</span><span class="tag">Servicios</span><span class="tag">Costos</span><span class="tag">Incidencias</span><span class="tag">Timeline</span></div>
+        </div>
+        <div class="card-footer-inner"><span>caso-registro.html</span><span class="material-icons">arrow_forward</span></div>
+      </a>
+    </div>
+
+    <div class="section-title">Gestión de Entidades</div>
+    <div class="grid">
+      <a href="proveedores.html" class="card">
+        <div class="card-top" style="background:linear-gradient(90deg,#22C55E,#06B6D4)"></div>
+        <div class="card-body">
+          <div class="card-icon" style="background:#F0FDF4"><span class="material-icons" style="color:#22C55E">local_pharmacy</span></div>
+          <div class="card-title">Proveedores</div>
+          <div class="card-desc">Listado de proveedores con tarjetas, búsqueda por especialidad/país, panel lateral de edición con pestañas para info, servicios y ubicaciones geográficas.</div>
+          <div class="card-tags"><span class="tag">4,314+ registros</span><span class="tag">Especialidades</span><span class="tag">Ubicaciones</span><span class="tag">Servicios</span></div>
+        </div>
+        <div class="card-footer-inner"><span>proveedores.html</span><span class="material-icons">arrow_forward</span></div>
+      </a>
+
+      <a href="clientes.html" class="card">
+        <div class="card-top" style="background:linear-gradient(90deg,#A855F7,#F59E0B)"></div>
+        <div class="card-body">
+          <div class="card-icon" style="background:#FAF5FF"><span class="material-icons" style="color:#A855F7">business</span></div>
+          <div class="card-title">Clientes / Aseguradoras</div>
+          <div class="card-desc">Gestión de clientes con configuración de parámetros: días máximos, servicios máximos, costos de transferencia y tarifas dinámicas por tipo de caso y continente.</div>
+          <div class="card-tags"><span class="tag">Tarifas</span><span class="tag">Por continente</span><span class="tag">Configuración</span></div>
+        </div>
+        <div class="card-footer-inner"><span>clientes.html</span><span class="material-icons">arrow_forward</span></div>
+      </a>
+
+      <a href="facturacion.html" class="card">
+        <div class="card-top" style="background:linear-gradient(90deg,#64748B,#94A3B8)"></div>
+        <div class="card-body">
+          <div class="card-icon" style="background:#F1F5F9"><span class="material-icons" style="color:#64748B">receipt_long</span></div>
+          <div class="card-title">Reporte de Facturación</div>
+          <div class="card-desc">Consulta de facturación con filtros de fecha, cliente y operador. Pipeline de estados clickeable, KPIs de totales (costo proveedor, fee, costo médico, total) y exportar Excel/PDF.</div>
+          <div class="card-tags"><span class="tag">Reportes</span><span class="tag">KPIs</span><span class="tag">Exportar</span><span class="tag">Filtros</span></div>
+        </div>
+        <div class="card-footer-inner"><span>facturacion.html</span><span class="material-icons">arrow_forward</span></div>
+      </a>
+    </div>
+
+    <div class="section-title">Configuración y Administración</div>
+    <div class="grid">
+      <a href="administracion.html" class="card">
+        <div class="card-top" style="background:linear-gradient(90deg,#EF4444,#F59E0B)"></div>
+        <div class="card-body">
+          <div class="card-icon" style="background:#FEF2F2"><span class="material-icons" style="color:#EF4444">admin_panel_settings</span></div>
+          <div class="card-title">Administración</div>
+          <div class="card-desc">Panel con 8 secciones: Usuarios (CRUD), Perfiles/Roles, Permisos por módulo, Estados de caso (drag & drop), Tipos de caso, SLA/Nivel de servicio, Parámetros del sistema e Importación masiva.</div>
+          <div class="card-tags"><span class="tag">Usuarios</span><span class="tag">Roles</span><span class="tag">Permisos</span><span class="tag">Estados</span><span class="tag">SLA</span><span class="tag">Importar</span></div>
+        </div>
+        <div class="card-footer-inner"><span>administracion.html</span><span class="material-icons">arrow_forward</span></div>
+      </a>
+    </div>
+
+    <!-- Design System Reference -->
+    <div class="section-title">Sistema de Diseño</div>
+    <div style="background:var(--surface);border-radius:16px;padding:24px;border:1px solid var(--divider);box-shadow:0 2px 12px rgba(0,0,0,0.06)">
+      <div style="font-size:15px;font-weight:600;margin-bottom:16px">🚩 Sistema de Banderas de Estado</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:24px">
+        <span style="display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:20px;font-size:13px;background:#FFFBEB;color:#92400E"><span style="width:10px;height:10px;border-radius:50%;background:#F59E0B;flex-shrink:0"></span>Coordinar</span>
+        <span style="display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:20px;font-size:13px;background:#ECFEFF;color:#0E7490"><span style="width:10px;height:10px;border-radius:50%;background:#06B6D4;flex-shrink:0"></span>Seguimiento</span>
+        <span style="display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:20px;font-size:13px;background:#EFF6FF;color:#1E40AF"><span style="width:10px;height:10px;border-radius:50%;background:#3B82F6;flex-shrink:0"></span>Caso Coordinado</span>
+        <span style="display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:20px;font-size:13px;background:#F0FDF4;color:#166534"><span style="width:10px;height:10px;border-radius:50%;background:#22C55E;flex-shrink:0"></span>IM Enviado</span>
+        <span style="display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:20px;font-size:13px;background:#FAF5FF;color:#6B21A8"><span style="width:10px;height:10px;border-radius:50%;background:#A855F7;flex-shrink:0"></span>Descargos</span>
+        <span style="display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:20px;font-size:13px;background:#F8FAFC;color:#475569"><span style="width:10px;height:10px;border-radius:50%;background:#94A3B8;flex-shrink:0"></span>Reembolsos</span>
+        <span style="display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:20px;font-size:13px;background:#F1F5F9;color:#334155"><span style="width:10px;height:10px;border-radius:50%;background:#64748B;flex-shrink:0"></span>Facturación</span>
+        <span style="display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:20px;font-size:13px;background:#FEF2F2;color:#991B1B"><span style="width:10px;height:10px;border-radius:50%;background:#EF4444;flex-shrink:0"></span>Cancelado</span>
+      </div>
+      <div style="font-size:13px;color:var(--text-secondary);line-height:1.7">
+        <strong style="color:var(--text-primary)">Stack tecnológico:</strong> Angular 17 (PWA + Service Worker) · Angular Material 17 · RxJS · .NET 8 Web API · Entity Framework Core · SQL Server · Swagger/OpenAPI<br>
+        <strong style="color:var(--text-primary)">Convenciones:</strong> CSS Variables para theming · Tokens de diseño en <code>shared.css</code> · Grid de 8px · Tipografía Roboto · Elevación Material Design<br>
+        <strong style="color:var(--text-primary)">Accesibilidad:</strong> Contraste WCAG AA · Keyboard navigation · Focus visible · ARIA labels
+      </div>
+    </div>
+
+  </div>
+
+  <footer>
+    MedCase Pro – Prototipos de Diseño UI/UX v1.0 · 2027<br>
+    Stack: Angular PWA + .NET 8 Backend · Sistema de Gestión de Casos de Atención Médica
+  </footer>
+</body>
+</html>

@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MedCase Pro – Registro de Caso</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    .caso-layout {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 20px;
+      align-items: start;
+    }
+    .main-form { display: flex; flex-direction: column; gap: 16px; }
+
+    /* Header de caso */
+    .caso-header-card {
+      background: linear-gradient(135deg, #0D47A1 0%, #1565C0 60%, #1976D2 100%);
+      border-radius: var(--radius-lg);
+      padding: 20px 24px;
+      color: white;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      box-shadow: 0 4px 20px rgba(21,101,192,0.3);
+    }
+    .caso-id-box {
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 10px;
+      padding: 10px 18px;
+      text-align: center;
+      backdrop-filter: blur(10px);
+    }
+    .caso-id-label { font-size: 11px; opacity: 0.7; letter-spacing: 0.5px; }
+    .caso-id-value { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
+    .caso-header-main { flex: 1; }
+    .caso-status-row { display: flex; align-items: center; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+    .status-flag-selector {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .flag-btn {
+      width: 28px; height: 28px;
+      border-radius: 6px;
+      cursor: pointer;
+      border: 3px solid transparent;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+    .flag-btn:hover { transform: scale(1.15); }
+    .flag-btn.selected { border-color: white; box-shadow: 0 0 0 2px rgba(255,255,255,0.5); transform: scale(1.1); }
+    .header-meta {
+      display: flex;
+      gap: 20px;
+      font-size: 13px;
+      opacity: 0.85;
+      flex-wrap: wrap;
+    }
+    .header-meta-item { display: flex; align-items: center; gap: 6px; }
+    .header-meta-item .material-icons { font-size: 16px; }
+
+    /* Tabs */
+    .form-tabs {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--divider-light);
+      overflow: hidden;
+    }
+    .form-tabs .tabs {
+      margin: 0;
+      padding: 0 16px;
+      background: var(--bg);
+      border-bottom: 2px solid var(--divider);
+    }
+    .form-tabs .tab-content { padding: 20px; }
+
+    /* Servicios table */
+    .service-row { display: grid; grid-template-columns: 80px 1fr 1fr 100px 100px 100px 40px; gap: 8px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--divider-light); }
+    .service-row:last-child { border-bottom: none; }
+    .service-row-header { font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.3px; }
+    .service-input { height: 34px; border: 1.5px solid var(--divider); border-radius: 6px; padding: 0 8px; font-size: 13px; font-family: 'Roboto', sans-serif; outline: none; transition: border-color 0.2s; }
+    .service-input:focus { border-color: var(--primary); }
+
+    /* Incidencias */
+    .incidencia-item {
+      background: var(--bg);
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      margin-bottom: 10px;
+      border-left: 3px solid var(--primary);
+    }
+    .incidencia-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+    .incidencia-user { font-size: 12px; font-weight: 600; color: var(--primary); }
+    .incidencia-date { font-size: 11px; color: var(--text-secondary); }
+    .incidencia-badge {
+      font-size: 10px;
+      padding: 2px 7px;
+      border-radius: 10px;
+      font-weight: 500;
+    }
+    .incidencia-badge.whatsapp { background: #E8F5E9; color: #2E7D32; }
+    .incidencia-badge.nota { background: var(--primary-50); color: var(--primary); }
+    .incidencia-text { font-size: 13px; color: var(--text-primary); line-height: 1.5; }
+    .incidencia-compose {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      background: var(--bg);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      border: 1px dashed var(--divider);
+    }
+    .incidencia-type-selector { display: flex; gap: 8px; }
+
+    /* Side panel */
+    .side-panel { display: flex; flex-direction: column; gap: 16px; }
+    .info-card { background: var(--surface); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); border: 1px solid var(--divider-light); overflow: hidden; }
+    .info-card-header { padding: 14px 16px; background: var(--primary-50); border-bottom: 1px solid var(--divider-light); display: flex; align-items: center; gap: 8px; }
+    .info-card-header .material-icons { font-size: 18px; color: var(--primary); }
+    .info-card-title { font-size: 14px; font-weight: 600; color: var(--primary-dark); }
+    .info-card-body { padding: 14px 16px; }
+    .info-row { display: flex; justify-content: space-between; align-items: flex-start; padding: 6px 0; border-bottom: 1px solid var(--divider-light); gap: 8px; }
+    .info-row:last-child { border-bottom: none; }
+    .info-key { font-size: 12px; color: var(--text-secondary); flex-shrink: 0; }
+    .info-val { font-size: 13px; font-weight: 500; color: var(--text-primary); text-align: right; }
+    .passenger-avatar-big {
+      width: 64px; height: 64px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: 700;
+      color: white;
+      margin: 0 auto 12px;
+      border: 3px solid white;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .timeline-item {
+      display: flex;
+      gap: 10px;
+      padding: 8px 0;
+      font-size: 12px;
+      position: relative;
+    }
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: 11px;
+      top: 28px;
+      bottom: -4px;
+      width: 1px;
+      background: var(--divider);
+    }
+    .timeline-item:last-child::before { display: none; }
+    .timeline-dot {
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      background: var(--primary-50);
+      border: 2px solid var(--primary-100);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .timeline-dot .material-icons { font-size: 13px; color: var(--primary); }
+    .timeline-text { color: var(--text-primary); line-height: 1.4; }
+    .timeline-time { font-size: 11px; color: var(--text-secondary); margin-top: 1px; }
+
+    /* Float save bar */
+    .float-save {
+      position: sticky;
+      bottom: 0;
+      background: white;
+      border-top: 1px solid var(--divider);
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      justify-content: flex-end;
+      z-index: 40;
+      margin: 0 -24px -24px;
+      box-shadow: 0 -4px 16px rgba(0,0,0,0.06);
+    }
+
+    @media (max-width: 900px) {
+      .caso-layout { grid-template-columns: 1fr; }
+      .service-row { grid-template-columns: 60px 1fr 1fr 80px; }
+    }
+  </style>
+</head>
+<body>
+<div class="app-shell">
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand" onclick="toggleSidebar()">
+      <div class="brand-icon"><span class="material-icons">local_hospital</span></div>
+      <span class="brand-text">MedCase Pro</span>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Principal</div>
+      <div class="nav-item" onclick="go('dashboard.html')"><span class="material-icons">dashboard</span><span class="nav-label">Dashboard</span></div>
+      <div class="nav-item active" onclick="go('casos-lista.html')"><span class="material-icons">folder_open</span><span class="nav-label">Casos</span><span class="nav-badge">47</span></div>
+      <div class="nav-section-label">Gestión</div>
+      <div class="nav-item" onclick="go('clientes.html')"><span class="material-icons">business</span><span class="nav-label">Clientes</span></div>
+      <div class="nav-item" onclick="go('proveedores.html')"><span class="material-icons">local_pharmacy</span><span class="nav-label">Proveedores</span></div>
+      <div class="nav-item" onclick="go('facturacion.html')"><span class="material-icons">receipt_long</span><span class="nav-label">Facturación</span></div>
+      <div class="nav-section-label">Herramientas</div>
+      <div class="nav-item" onclick="go('administracion.html')"><span class="material-icons">admin_panel_settings</span><span class="nav-label">Administración</span></div>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="user-card">
+        <div class="user-avatar">WA</div>
+        <div class="user-info"><div class="user-name">Web Admin</div><div class="user-role">Administrador</div></div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main-area">
+    <header class="header">
+      <button class="header-toggle" onclick="toggleSidebar()"><span class="material-icons">menu</span></button>
+      <div>
+        <div class="page-title">Registro de Caso</div>
+        <div class="breadcrumb"><a href="dashboard.html">Inicio</a><span class="sep">›</span><a href="casos-lista.html">Casos</a><span class="sep">›</span><span>Nuevo Caso</span></div>
+      </div>
+      <div style="flex:1"></div>
+      <div class="header-actions">
+        <button class="btn btn-outline btn-sm" onclick="go('casos-lista.html')"><span class="material-icons">arrow_back</span> Cancelar</button>
+        <button class="icon-btn"><span class="material-icons">notifications_none</span><span class="notif-dot"></span></button>
+      </div>
+    </header>
+
+    <main class="content">
+      <!-- Caso Header Card -->
+      <div class="caso-header-card mb-4">
+        <div class="caso-id-box">
+          <div class="caso-id-label">ID DE CASO</div>
+          <div class="caso-id-value">UMA-117823</div>
+          <div style="font-size:10px;opacity:0.6;margin-top:2px">Auto-generado</div>
+        </div>
+        <div class="caso-header-main">
+          <div style="font-size:18px;font-weight:700;margin-bottom:6px">Nuevo Caso de Atención Médica</div>
+          <div class="header-meta">
+            <div class="header-meta-item"><span class="material-icons">calendar_today</span>11/08/2026</div>
+            <div class="header-meta-item"><span class="material-icons">person</span>webadmin</div>
+          </div>
+          <div class="caso-status-row">
+            <span style="font-size:12px;opacity:0.7">Estado:</span>
+            <div class="status-flag-selector" id="flagSelector">
+              <div class="flag-btn selected" style="background:var(--s-coordinar)" data-status="coordinar" data-tooltip="Coordinar" onclick="selectStatus(this)"></div>
+              <div class="flag-btn" style="background:var(--s-seguimiento)" data-status="seguimiento" data-tooltip="Seguimiento" onclick="selectStatus(this)"></div>
+              <div class="flag-btn" style="background:var(--s-coordinado)" data-status="coordinado" data-tooltip="Caso Coordinado" onclick="selectStatus(this)"></div>
+              <div class="flag-btn" style="background:var(--s-enviado)" data-status="enviado" data-tooltip="IM Enviado" onclick="selectStatus(this)"></div>
+              <div class="flag-btn" style="background:var(--s-descargos)" data-status="descargos" data-tooltip="Descargos" onclick="selectStatus(this)"></div>
+              <div class="flag-btn" style="background:var(--s-reembolsos)" data-status="reembolsos" data-tooltip="Reembolsos" onclick="selectStatus(this)"></div>
+              <div class="flag-btn" style="background:var(--s-facturacion)" data-status="facturacion" data-tooltip="Facturación" onclick="selectStatus(this)"></div>
+              <div class="flag-btn" style="background:var(--s-cancelado)" data-status="cancelado" data-tooltip="Cancelado" onclick="selectStatus(this)"></div>
+            </div>
+            <span id="currentStatusLabel" class="status-badge status-coordinar" style="margin-left:8px">
+              <span class="flag-dot"></span>Coordinar
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="caso-layout">
+        <!-- Main Form -->
+        <div class="main-form">
+
+          <!-- Tabs -->
+          <div class="form-tabs">
+            <div class="tabs">
+              <div class="tab-item active" onclick="switchTab('datos')"><span class="material-icons">assignment</span>Datos del Caso</div>
+              <div class="tab-item" onclick="switchTab('servicios')"><span class="material-icons">medical_services</span>Servicios<span class="tab-count" id="servCount">1</span></div>
+              <div class="tab-item" onclick="switchTab('incidencias')"><span class="material-icons">chat</span>Incidencias<span class="tab-count" id="incCount">2</span></div>
+              <div class="tab-item" onclick="switchTab('adjuntos')"><span class="material-icons">attach_file</span>Adjuntos</div>
+            </div>
+
+            <!-- Tab: Datos del Caso -->
+            <div class="form-tabs-content tab-panel active" id="tab-datos">
+              <div class="tab-content">
+
+                <!-- Sección 1: Identificación -->
+                <div class="form-section">
+                  <div class="form-section-title"><span class="material-icons">assignment_ind</span>Identificación del Caso</div>
+                  <div class="form-grid form-grid-3">
+                    <div class="form-group">
+                      <label class="form-label">Cliente <span class="required">*</span></label>
+                      <select class="form-control" onchange="updateCasoCosts()">
+                        <option value="">Seleccionar cliente…</option>
+                        <option selected>QUANTICO</option>
+                        <option>WMC</option>
+                        <option>GO ASSISTANCE</option>
+                        <option>WTA</option>
+                        <option>PASSPORT CARD</option>
+                        <option>INTERMAC ASSISTANCE</option>
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Continente <span class="required">*</span></label>
+                      <select class="form-control">
+                        <option>América del Sur</option>
+                        <option>América del Norte</option>
+                        <option>Europa</option>
+                        <option>Asia</option>
+                        <option>África</option>
+                        <option>Oceanía</option>
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Tipo de Caso <span class="required">*</span></label>
+                      <select class="form-control" onchange="updateCasoCosts()">
+                        <option>Simple</option>
+                        <option>Medio</option>
+                        <option>Complejo</option>
+                        <option>Crítico</option>
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Ref. Externa</label>
+                      <input type="text" class="form-control" placeholder="Ej. REF-2026-001">
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Fecha de Apertura</label>
+                      <input type="date" class="form-control" value="2026-08-11">
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Prioridad</label>
+                      <select class="form-control">
+                        <option>Normal</option>
+                        <option>Alta</option>
+                        <option>Urgente</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Sección 2: Pasajero -->
+                <div class="form-section">
+                  <div class="form-section-title"><span class="material-icons">person</span>Datos del Pasajero</div>
+                  <div class="alert alert-info mb-3">
+                    <span class="material-icons">info</span>
+                    Ingresa la tarjeta de asistencia para cargar los datos del pasajero automáticamente desde la base de datos del cliente.
+                  </div>
+                  <div class="form-grid form-grid-2" style="margin-bottom:16px">
+                    <div class="form-group">
+                      <label class="form-label">Tarjeta de Asistencia / Póliza</label>
+                      <div style="display:flex;gap:8px">
+                        <input type="text" class="form-control" placeholder="Ej. QTC-2026-001234" id="polizaInput">
+                        <button class="btn btn-secondary" onclick="searchPoliza()"><span class="material-icons">search</span></button>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Pasajero <span class="required">*</span></label>
+                      <input type="text" class="form-control" placeholder="Buscar o ingresar nombre…" id="pasajeroInput" value="ROBERTO RAMOS">
+                    </div>
+                  </div>
+                  <div class="form-grid form-grid-3">
+                    <div class="form-group form-col-2">
+                      <label class="form-label">Nombre Completo <span class="required">*</span></label>
+                      <input type="text" class="form-control" value="Roberto Ramos">
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Fecha de Nacimiento</label>
+                      <input type="date" class="form-control" value="1979-10-17">
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Edad</label>
+                      <input type="text" class="form-control" value="46" disabled>
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Teléfono</label>
+                      <input type="text" class="form-control" value="4545454654">
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">País</label>
+                      <select class="form-control">
+                        <option selected>PERÚ</option>
+                        <option>ARGENTINA</option>
+                        <option>BRASIL</option>
+                        <option>COLOMBIA</option>
+                        <option>MÉXICO</option>
+                        <option>CHILE</option>
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Ciudad</label>
+                      <input type="text" class="form-control" value="Lima">
+                    </div>
+                    <div class="form-group form-col-3">
+                      <label class="form-label">Dirección</label>
+                      <input type="text" class="form-control" value="Jr lima 123">
+                    </div>
+                    <div class="form-group form-col-3">
+                      <label class="form-label">Síntomas / Motivo de Consulta</label>
+                      <textarea class="form-control" rows="3" maxlength="300" placeholder="Describe los síntomas o motivo del caso…">Es una prueba</textarea>
+                      <div class="form-hint">13/300 caracteres</div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Vigencia de póliza -->
+                <div class="form-section">
+                  <div class="form-section-title"><span class="material-icons">verified_user</span>Cobertura del Seguro</div>
+                  <div class="form-grid form-grid-4">
+                    <div class="form-group">
+                      <label class="form-label">Marca</label>
+                      <select class="form-control">
+                        <option value="">--</option>
+                        <option>QUANTICO BASIC</option>
+                        <option>QUANTICO PLUS</option>
+                        <option>QUANTICO PREMIUM</option>
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Producto</label>
+                      <select class="form-control"><option>--</option></select>
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Inicio Vigencia</label>
+                      <input type="date" class="form-control" value="2026-07-01">
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Fin Vigencia</label>
+                      <input type="date" class="form-control" value="2026-09-01">
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- Tab: Servicios -->
+            <div class="form-tabs-content tab-panel" id="tab-servicios">
+              <div class="tab-content">
+                <!-- Formulario nuevo servicio -->
+                <div class="form-section">
+                  <div class="form-section-title"><span class="material-icons">add_circle</span>Agregar Servicio Médico</div>
+                  <div class="form-grid form-grid-3">
+                    <div class="form-group form-col-2">
+                      <label class="form-label">Proveedor <span class="required">*</span></label>
+                      <div style="display:flex;gap:8px">
+                        <input type="text" class="form-control" placeholder="Buscar proveedor…" id="proveedorInput">
+                        <button class="btn btn-secondary btn-icon" onclick="searchProveedor()"><span class="material-icons">search</span></button>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Contacto</label>
+                      <input type="text" class="form-control" placeholder="Nombre del contacto">
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Servicio Solicitado <span class="required">*</span></label>
+                      <input type="text" class="form-control" placeholder="Ej. Consulta médica general">
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Servicio Recibido</label>
+                      <input type="text" class="form-control" placeholder="Descripción del servicio brindado">
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Fecha de Atención <span class="required">*</span></label>
+                      <input type="date" class="form-control" value="2026-08-11">
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Deducible (USD)</label>
+                      <input type="number" class="form-control" value="0" min="0">
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Garantía (USD)</label>
+                      <input type="number" class="form-control" value="0" min="0">
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Costo Proveedor (USD)</label>
+                      <input type="number" class="form-control" id="costoProv" value="0" oninput="calcCosts()">
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Fee (%)</label>
+                      <input type="number" class="form-control" id="feePct" value="0" oninput="calcCosts()">
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Costo Cliente (USD) <span style="color:var(--success);font-size:10px">auto</span></label>
+                      <input type="text" class="form-control" id="costoCliente" value="0" disabled style="background:#F0FDF4;color:var(--success);font-weight:600">
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Informe Médico</label>
+                      <input type="date" class="form-control">
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Recepción Factura</label>
+                      <input type="date" class="form-control">
+                    </div>
+                    <div class="form-group form-col-3">
+                      <label class="form-label">Observación Costo Proveedor</label>
+                      <textarea class="form-control" rows="2" maxlength="400" placeholder="Detalles del costo del proveedor…"></textarea>
+                    </div>
+                    <div class="form-group form-col-3">
+                      <label class="form-label">Observación Costo Cliente</label>
+                      <textarea class="form-control" rows="2" maxlength="400" placeholder="Detalles del costo al cliente…"></textarea>
+                    </div>
+                  </div>
+                  <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px">
+                    <button class="btn btn-outline"><span class="material-icons">close</span>Limpiar</button>
+                    <button class="btn btn-primary" onclick="addServicio()"><span class="material-icons">save</span>Grabar Servicio</button>
+                  </div>
+                </div>
+
+                <!-- Lista servicios -->
+                <div class="form-section">
+                  <div class="form-section-title"><span class="material-icons">list</span>Servicios Registrados</div>
+                  <div class="table-container">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>ID Servicio</th>
+                          <th>F. Atención</th>
+                          <th>Proveedor</th>
+                          <th>Servicio</th>
+                          <th>Deducible</th>
+                          <th>C. Proveedor</th>
+                          <th>Fee</th>
+                          <th>C. Cliente</th>
+                          <th>Inf. Médico</th>
+                          <th>Factura</th>
+                          <th></th>
+                        </tr>
+                      </thead>
+                      <tbody id="serviciosTable">
+                        <tr>
+                          <td><span style="color:var(--primary);font-weight:500;font-size:13px">144584-26</span></td>
+                          <td class="date-cell">11/08/2026</td>
+                          <td>MEDIC SERVICE S.A.</td>
+                          <td>PRUEBA</td>
+                          <td>USD 100.00</td>
+                          <td>USD 50.00</td>
+                          <td>0%</td>
+                          <td style="color:var(--success);font-weight:600">USD 50.00</td>
+                          <td class="date-cell">11/08/2026</td>
+                          <td class="date-cell">11/08/2026</td>
+                          <td><div class="actions-cell"><button class="action-icon" onclick=""><span class="material-icons">edit</span></button><button class="action-icon danger"><span class="material-icons">delete_outline</span></button></div></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div style="display:flex;justify-content:flex-end;gap:20px;padding:12px 0;font-size:13px;font-weight:600;border-top:1px solid var(--divider-light);margin-top:8px">
+                    <span>Total Proveedor: <span style="color:var(--error)">USD 50.00</span></span>
+                    <span>Total Fee: <span style="color:var(--primary)">USD 0.00</span></span>
+                    <span>Total Cliente: <span style="color:var(--success)">USD 50.00</span></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab: Incidencias -->
+            <div class="form-tabs-content tab-panel" id="tab-incidencias">
+              <div class="tab-content">
+                <div class="form-section">
+                  <div class="form-section-title"><span class="material-icons">chat_bubble</span>Historial de Incidencias</div>
+
+                  <div class="incidencia-item">
+                    <div class="incidencia-header">
+                      <span class="incidencia-user">webadmin</span>
+                      <span class="incidencia-date">11/08/2026 10:48</span>
+                      <span class="incidencia-badge nota">Nota Interna</span>
+                    </div>
+                    <div class="incidencia-text">El pasajero llama para coordinar atención médica. Se contacta con MEDIC SERVICE S.A. para agendar consulta para hoy a las 3pm.</div>
+                  </div>
+                  <div class="incidencia-item" style="border-color:var(--s-enviado)">
+                    <div class="incidencia-header">
+                      <span class="incidencia-user">luisgonzalez</span>
+                      <span class="incidencia-date">10/08/2026 17:30</span>
+                      <span class="incidencia-badge whatsapp">WhatsApp</span>
+                    </div>
+                    <div class="incidencia-text">Confirmación recibida por WhatsApp: el pasajero fue atendido sin problemas. Se solicita informe médico al proveedor.</div>
+                  </div>
+
+                  <!-- Compose -->
+                  <div class="incidencia-compose" style="margin-top:16px">
+                    <div class="incidencia-type-selector">
+                      <span class="chip active" onclick="setIncType(this,'nota')"><span class="material-icons">note</span>Nota Interna</span>
+                      <span class="chip" onclick="setIncType(this,'whatsapp')"><span class="material-icons">chat</span>WhatsApp</span>
+                      <span class="chip" onclick="setIncType(this,'email')"><span class="material-icons">email</span>Email</span>
+                      <span class="chip" onclick="setIncType(this,'llamada')"><span class="material-icons">call</span>Llamada</span>
+                    </div>
+                    <textarea class="form-control" rows="3" placeholder="Escribe la incidencia o novedad del caso…"></textarea>
+                    <div style="display:flex;justify-content:flex-end;gap:8px">
+                      <button class="btn btn-primary btn-sm" onclick="addIncidencia()"><span class="material-icons">send</span>Registrar</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab: Adjuntos -->
+            <div class="form-tabs-content tab-panel" id="tab-adjuntos">
+              <div class="tab-content">
+                <div class="form-section">
+                  <div class="form-section-title"><span class="material-icons">cloud_upload</span>Documentos Adjuntos</div>
+                  <div style="border:2px dashed var(--divider);border-radius:var(--radius-lg);padding:40px;text-align:center;cursor:pointer;transition:all 0.2s;background:var(--bg)" onclick="this.style.borderColor='var(--primary)'" ondragover="event.preventDefault()">
+                    <span class="material-icons" style="font-size:48px;color:var(--text-disabled)">cloud_upload</span>
+                    <p style="font-size:15px;color:var(--text-secondary);margin-top:12px">Arrastra archivos aquí o <span style="color:var(--primary);font-weight:500">haz clic para seleccionar</span></p>
+                    <p class="text-xs text-secondary mt-2">PDF, PNG, JPG, DOCX · Máx. 10MB por archivo</p>
+                  </div>
+                  <div style="margin-top:16px">
+                    <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg);border-radius:var(--radius-md);margin-bottom:8px">
+                      <span class="material-icons" style="color:#EF4444">picture_as_pdf</span>
+                      <span style="flex:1;font-size:13px">Informe_medico_117822.pdf</span>
+                      <span class="text-xs text-secondary">1.2 MB</span>
+                      <button class="action-icon"><span class="material-icons">download</span></button>
+                      <button class="action-icon danger"><span class="material-icons">delete_outline</span></button>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg);border-radius:var(--radius-md)">
+                      <span class="material-icons" style="color:#1565C0">image</span>
+                      <span style="flex:1;font-size:13px">Factura_proveedor.jpg</span>
+                      <span class="text-xs text-secondary">843 KB</span>
+                      <button class="action-icon"><span class="material-icons">download</span></button>
+                      <button class="action-icon danger"><span class="material-icons">delete_outline</span></button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Float Save -->
+          <div class="float-save">
+            <span class="text-sm text-secondary">Última modificación: hace 2 minutos</span>
+            <button class="btn btn-outline" onclick="go('casos-lista.html')"><span class="material-icons">close</span>Cancelar</button>
+            <button class="btn btn-success" onclick="saveDraft()"><span class="material-icons">save</span>Guardar Borrador</button>
+            <button class="btn btn-primary" onclick="saveCase()"><span class="material-icons">check_circle</span>Grabar Caso</button>
+          </div>
+
+        </div><!-- /main-form -->
+
+        <!-- Side Panel -->
+        <div class="side-panel">
+
+          <!-- Datos pasajero resumen -->
+          <div class="info-card">
+            <div class="info-card-header">
+              <span class="material-icons">person</span>
+              <span class="info-card-title">Datos del Pasajero</span>
+            </div>
+            <div class="info-card-body">
+              <div class="passenger-avatar-big">RR</div>
+              <div class="info-row"><span class="info-key">Nombre</span><span class="info-val">Roberto Ramos</span></div>
+              <div class="info-row"><span class="info-key">Nacimiento</span><span class="info-val">17/10/1979 (46 años)</span></div>
+              <div class="info-row"><span class="info-key">Teléfono</span><span class="info-val">4545454654</span></div>
+              <div class="info-row"><span class="info-key">País</span><span class="info-val">🇵🇪 Perú</span></div>
+              <div class="info-row"><span class="info-key">Ciudad</span><span class="info-val">Lima</span></div>
+              <div class="info-row"><span class="info-key">Casos anteriores</span><span class="info-val" style="color:var(--primary);cursor:pointer">3 casos</span></div>
+            </div>
+          </div>
+
+          <!-- Info del cliente -->
+          <div class="info-card">
+            <div class="info-card-header">
+              <span class="material-icons">business</span>
+              <span class="info-card-title">Info Cliente</span>
+            </div>
+            <div class="info-card-body">
+              <div class="info-row"><span class="info-key">Cliente</span><span class="info-val">QUANTICO</span></div>
+              <div class="info-row"><span class="info-key">Razón Social</span><span class="info-val">QUANTICO SERVICIOS DE ASISTENCIAS</span></div>
+              <div class="info-row"><span class="info-key">Tipo</span><span class="info-val">Simple → USD 40</span></div>
+              <div class="info-row"><span class="info-key">Días Máx.</span><span class="info-val">45 días</span></div>
+              <div class="info-row"><span class="info-key">Servicios Máx.</span><span class="info-val">100 servicios</span></div>
+              <div class="info-row"><span class="info-key">Transferencia</span><span class="info-val">USD 0</span></div>
+            </div>
+          </div>
+
+          <!-- Costos resumen -->
+          <div class="info-card">
+            <div class="info-card-header">
+              <span class="material-icons">monetization_on</span>
+              <span class="info-card-title">Resumen de Costos</span>
+            </div>
+            <div class="info-card-body">
+              <div class="info-row"><span class="info-key">Costo Proveedor</span><span class="info-val" style="color:var(--error)">USD 50.00</span></div>
+              <div class="info-row"><span class="info-key">Fee</span><span class="info-val">USD 0.00</span></div>
+              <div class="info-row"><span class="info-key">Deducible</span><span class="info-val">USD 100.00</span></div>
+              <div class="info-row"><span class="info-key">Garantías</span><span class="info-val">USD 0.00</span></div>
+              <div style="padding:12px 0 0;border-top:2px solid var(--primary-50);margin-top:8px">
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                  <span style="font-size:14px;font-weight:600">Total Cliente</span>
+                  <span style="font-size:18px;font-weight:700;color:var(--success)">USD 50.00</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Timeline -->
+          <div class="info-card">
+            <div class="info-card-header">
+              <span class="material-icons">timeline</span>
+              <span class="info-card-title">Historial de Estados</span>
+            </div>
+            <div class="info-card-body">
+              <div class="timeline-item">
+                <div class="timeline-dot"><span class="material-icons">add_circle</span></div>
+                <div><div class="timeline-text">Caso creado por <strong>webadmin</strong></div><div class="timeline-time">11/08/2026 09:00</div></div>
+              </div>
+              <div class="timeline-item">
+                <div class="timeline-dot" style="background:var(--s-coordinar-bg);border-color:var(--s-coordinar)"><span class="material-icons" style="color:var(--s-coordinar)">flag</span></div>
+                <div><div class="timeline-text">Estado: <strong>Coordinar</strong></div><div class="timeline-time">11/08/2026 09:00</div></div>
+              </div>
+              <div class="timeline-item">
+                <div class="timeline-dot"><span class="material-icons">medical_services</span></div>
+                <div><div class="timeline-text">Servicio agregado: MEDIC SERVICE S.A.</div><div class="timeline-time">11/08/2026 10:30</div></div>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /side-panel -->
+      </div><!-- /caso-layout -->
+    </main>
+  </div>
+</div>
+
+<script>
+function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); }
+function go(url) { window.location.href = url; }
+
+function selectStatus(btn) {
+  document.querySelectorAll('.flag-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  const status = btn.dataset.status;
+  const labels = {
+    coordinar:'Coordinar',seguimiento:'Seguimiento/Pendiente',coordinado:'Caso Coordinado',
+    enviado:'IM Enviado',descargos:'Descargos',reembolsos:'Reembolsos',
+    facturacion:'Facturación',cancelado:'Cancelado'
+  };
+  const label = document.getElementById('currentStatusLabel');
+  label.className = `status-badge status-${status}`;
+  label.innerHTML = `<span class="flag-dot"></span>${labels[status]}`;
+}
+
+function switchTab(id) {
+  document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  document.getElementById('tab-' + id).classList.add('active');
+}
+
+function calcCosts() {
+  const cp = parseFloat(document.getElementById('costoProv').value) || 0;
+  const fee = parseFloat(document.getElementById('feePct').value) || 0;
+  document.getElementById('costoCliente').value = (cp + cp * fee / 100).toFixed(2);
+}
+
+function addServicio() {
+  alert('✅ Servicio guardado correctamente');
+  const count = document.getElementById('servCount');
+  count.textContent = parseInt(count.textContent) + 1;
+}
+
+function addIncidencia() {
+  alert('✅ Incidencia registrada');
+  const count = document.getElementById('incCount');
+  count.textContent = parseInt(count.textContent) + 1;
+}
+
+function setIncType(el, type) {
+  document.querySelectorAll('.incidencia-type-selector .chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function searchPoliza() { alert('Buscando póliza en base de datos del cliente…'); }
+function searchProveedor() { alert('Abriendo buscador de proveedores…'); }
+function updateCasoCosts() {}
+function saveDraft() { alert('💾 Borrador guardado'); }
+function saveCase() { alert('✅ Caso UMA-117823 guardado correctamente'); window.location.href = 'casos-lista.html'; }
+</script>
+</body>
+</html>

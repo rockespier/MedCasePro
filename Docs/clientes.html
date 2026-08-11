@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MedCase Pro – Clientes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    .split-layout { display: grid; grid-template-columns: 1fr 440px; gap: 20px; align-items: start; }
+    .client-row { cursor: pointer; }
+    .client-logo {
+      width: 36px; height: 36px;
+      border-radius: 8px;
+      background: var(--primary-50);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--primary);
+      flex-shrink: 0;
+    }
+    .cost-tag-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--divider-light);
+    }
+    .cost-tag-row:last-child { border-bottom: none; }
+    .cost-tag-select { height: 34px; border: 1.5px solid var(--divider); border-radius: 6px; padding: 0 8px; font-size: 13px; font-family: Roboto, sans-serif; outline: none; background: var(--bg); transition: border-color 0.2s; }
+    .cost-tag-select:focus { border-color: var(--primary); background: white; }
+    .cost-input { height: 34px; width: 90px; border: 1.5px solid var(--divider); border-radius: 6px; padding: 0 8px; font-size: 13px; font-family: Roboto, sans-serif; outline: none; text-align: right; }
+    .cost-input:focus { border-color: var(--primary); }
+    .detail-panel {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      border: 1px solid var(--divider-light);
+      position: sticky;
+      top: 0;
+      overflow: hidden;
+    }
+    .detail-header {
+      background: linear-gradient(135deg, #0D47A1, #1976D2);
+      padding: 20px;
+      color: white;
+    }
+    .section-inner { padding: 16px 20px; border-bottom: 1px solid var(--divider-light); }
+    .section-inner:last-child { border-bottom: none; }
+    @media (max-width: 1000px) { .split-layout { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand" onclick="toggleSidebar()"><div class="brand-icon"><span class="material-icons">local_hospital</span></div><span class="brand-text">MedCase Pro</span></div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Principal</div>
+      <div class="nav-item" onclick="go('dashboard.html')"><span class="material-icons">dashboard</span><span class="nav-label">Dashboard</span></div>
+      <div class="nav-item" onclick="go('casos-lista.html')"><span class="material-icons">folder_open</span><span class="nav-label">Casos</span><span class="nav-badge">47</span></div>
+      <div class="nav-section-label">Gestión</div>
+      <div class="nav-item active"><span class="material-icons">business</span><span class="nav-label">Clientes</span></div>
+      <div class="nav-item" onclick="go('proveedores.html')"><span class="material-icons">local_pharmacy</span><span class="nav-label">Proveedores</span></div>
+      <div class="nav-item" onclick="go('facturacion.html')"><span class="material-icons">receipt_long</span><span class="nav-label">Facturación</span></div>
+      <div class="nav-section-label">Herramientas</div>
+      <div class="nav-item" onclick="go('administracion.html')"><span class="material-icons">admin_panel_settings</span><span class="nav-label">Administración</span></div>
+    </nav>
+    <div class="sidebar-bottom"><div class="user-card"><div class="user-avatar">WA</div><div class="user-info"><div class="user-name">Web Admin</div><div class="user-role">Administrador</div></div></div></div>
+  </aside>
+
+  <div class="main-area">
+    <header class="header">
+      <button class="header-toggle" onclick="toggleSidebar()"><span class="material-icons">menu</span></button>
+      <div><div class="page-title">Clientes</div><div class="breadcrumb"><a href="dashboard.html">Inicio</a><span class="sep">›</span><span>Clientes</span></div></div>
+      <div style="flex:1"></div>
+      <div class="header-actions">
+        <button class="btn btn-primary" onclick="newClient()"><span class="material-icons">add</span>Nuevo Cliente</button>
+        <button class="icon-btn"><span class="material-icons">notifications_none</span><span class="notif-dot"></span></button>
+      </div>
+    </header>
+
+    <main class="content">
+      <div class="split-layout">
+        <!-- Clients Table -->
+        <div class="card">
+          <div class="card-header">
+            <span class="material-icons" style="color:var(--primary)">business</span>
+            <span class="card-title">Listado de Clientes</span>
+            <div class="header-search" style="max-width:220px">
+              <span class="material-icons search-icon" style="font-size:16px">search</span>
+              <input type="text" placeholder="Buscar cliente…" oninput="filterClients(this.value)" style="height:34px;font-size:13px">
+            </div>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Empresa</th>
+                  <th>Descripción</th>
+                  <th>Días Máx.</th>
+                  <th>Serv. Máx.</th>
+                  <th>Activo</th>
+                </tr>
+              </thead>
+              <tbody id="clientTable">
+              </tbody>
+            </table>
+          </div>
+          <div class="card-footer" style="justify-content:flex-end">
+            <div class="pagination">
+              <button class="page-btn"><span class="material-icons">chevron_left</span></button>
+              <button class="page-btn active">1</button>
+              <button class="page-btn">2</button>
+              <button class="page-btn">3</button>
+              <button class="page-btn"><span class="material-icons">chevron_right</span></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Client Detail Form -->
+        <div class="detail-panel" id="detailPanel">
+          <div class="detail-header">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+              <div style="width:48px;height:48px;border-radius:12px;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;border:2px solid rgba(255,255,255,0.3)">
+                <span class="material-icons" style="font-size:28px">business</span>
+              </div>
+              <div>
+                <div style="font-size:16px;font-weight:700" id="clientDetailName">QUANTICO</div>
+                <div style="font-size:12px;opacity:0.7">UNO MED ASSIST</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:12px;font-size:12px;opacity:0.8">
+              <span>📅 45 días máx.</span>
+              <span>📋 100 servicios máx.</span>
+            </div>
+          </div>
+
+          <div class="section-inner">
+            <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--primary);margin-bottom:12px">Información General</div>
+            <div class="form-grid form-grid-2" style="gap:12px">
+              <div class="form-group">
+                <label class="form-label">Empresa <span class="required">*</span></label>
+                <select class="form-control" style="height:38px;font-size:13px">
+                  <option selected>UNO MED ASSIST</option>
+                  <option>DOS ASSISTANCE</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Nombre (Descripción) <span class="required">*</span></label>
+                <input type="text" class="form-control" style="height:38px;font-size:13px" value="QUANTICO">
+              </div>
+              <div class="form-group form-col-2">
+                <label class="form-label">Razón Social</label>
+                <input type="text" class="form-control" style="height:38px;font-size:13px" value="QUANTICO SERVICIOS DE ASISTENCIAS">
+              </div>
+              <div class="form-group form-col-2">
+                <label class="form-label">Dirección</label>
+                <input type="text" class="form-control" style="height:38px;font-size:13px" value="Ciudad de Panama">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Identificación Fiscal</label>
+                <input type="text" class="form-control" style="height:38px;font-size:13px" placeholder="RUC / NIT / RIF…">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Giro del Negocio</label>
+                <input type="text" class="form-control" style="height:38px;font-size:13px" placeholder="Ej. Seguros de Viaje">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Serv. Máximos</label>
+                <input type="number" class="form-control" style="height:38px;font-size:13px" value="100">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Días Máx. Cierre</label>
+                <input type="number" class="form-control" style="height:38px;font-size:13px" value="45">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Costo Transfer. Banco (USD)</label>
+                <input type="number" class="form-control" style="height:38px;font-size:13px" value="0">
+              </div>
+              <div class="form-group" style="flex-direction:row;align-items:center;gap:8px;padding-top:20px">
+                <input type="checkbox" checked style="accent-color:var(--primary);width:16px;height:16px">
+                <label class="form-label" style="margin:0">Activo</label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Costos por tipo/continente -->
+          <div class="section-inner">
+            <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--primary);margin-bottom:12px">Tarifas por Tipo de Caso y Continente</div>
+            <div id="costRows">
+              <div class="cost-tag-row">
+                <select class="cost-tag-select"><option>Complejo</option><option>Medio</option><option selected>Simple</option></select>
+                <select class="cost-tag-select"><option selected>América Sur</option><option>Europa</option><option>América Norte</option><option>Asia</option></select>
+                <span style="font-size:13px">USD</span>
+                <input type="number" class="cost-input" value="40">
+                <button class="action-icon danger" style="width:28px;height:28px" onclick="this.parentElement.remove()"><span class="material-icons" style="font-size:16px">close</span></button>
+              </div>
+              <div class="cost-tag-row">
+                <select class="cost-tag-select"><option>Complejo</option><option selected>Medio</option><option>Simple</option></select>
+                <select class="cost-tag-select"><option selected>América Sur</option><option>Europa</option><option>América Norte</option></select>
+                <span style="font-size:13px">USD</span>
+                <input type="number" class="cost-input" value="55">
+                <button class="action-icon danger" style="width:28px;height:28px" onclick="this.parentElement.remove()"><span class="material-icons" style="font-size:16px">close</span></button>
+              </div>
+              <div class="cost-tag-row">
+                <select class="cost-tag-select"><option selected>Complejo</option><option>Medio</option><option>Simple</option></select>
+                <select class="cost-tag-select"><option selected>América Sur</option><option>Europa</option><option>América Norte</option></select>
+                <span style="font-size:13px">USD</span>
+                <input type="number" class="cost-input" value="70">
+                <button class="action-icon danger" style="width:28px;height:28px" onclick="this.parentElement.remove()"><span class="material-icons" style="font-size:16px">close</span></button>
+              </div>
+            </div>
+            <button class="btn btn-secondary btn-sm mt-3" onclick="addCostRow()"><span class="material-icons">add</span>Agregar Tarifa</button>
+          </div>
+
+          <div class="section-inner" style="display:flex;justify-content:flex-end;gap:8px">
+            <button class="btn btn-outline btn-sm"><span class="material-icons">clear</span>Limpiar</button>
+            <button class="btn btn-primary btn-sm" onclick="saveClient()"><span class="material-icons">save</span>Grabar Cliente</button>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+</div>
+
+<script>
+const CLIENTS = [
+  { empresa:'UNO MED ASSIST', desc:'CHA',              dias:21, serv:200, activo:true  },
+  { empresa:'UNO MED ASSIST', desc:'H&C ASSISTANCE',   dias:200,serv:200, activo:true  },
+  { empresa:'UNO MED ASSIST', desc:'PASSPORT CARD',    dias:30, serv:200, activo:true  },
+  { empresa:'UNO MED ASSIST', desc:'QUANTICO',         dias:45, serv:100, activo:true  },
+  { empresa:'DOS ASSISTANCE',  desc:'ASSIST 24',        dias:21, serv:200, activo:true  },
+  { empresa:'DOS ASSISTANCE',  desc:'BEST SERVICE GROUP',dias:21,serv:200, activo:true  },
+  { empresa:'DOS ASSISTANCE',  desc:'CONTINENTAL ASSIST',dias:21,serv:200, activo:true  },
+  { empresa:'DOS ASSISTANCE',  desc:'CORIS LATAM',      dias:60, serv:1000,activo:true  },
+  { empresa:'DOS ASSISTANCE',  desc:'GO ASSISTANCE',    dias:42, serv:200, activo:true  },
+  { empresa:'DOS ASSISTANCE',  desc:'INNOVA DOCTORS',   dias:21, serv:200, activo:false },
+];
+
+function renderClients(list) {
+  document.getElementById('clientTable').innerHTML = list.map((c,i) => `
+    <tr class="client-row" onclick="selectClient('${c.desc}','${c.empresa}',${c.dias},${c.serv})">
+      <td><div style="display:flex;align-items:center;gap:8px">
+        <div class="client-logo">${c.desc[0]}</div>
+        <span style="font-size:13px;color:var(--primary);font-weight:500">${c.empresa}</span>
+      </div></td>
+      <td style="font-size:13px">${c.desc}</td>
+      <td style="font-size:13px;text-align:center">${c.dias}</td>
+      <td style="font-size:13px;text-align:center">${c.serv}</td>
+      <td><span class="status-badge ${c.activo ? 'status-enviado' : 'status-cancelado'}" style="font-size:11px;padding:3px 8px">${c.activo ? 'Activo' : 'Inactivo'}</span></td>
+    </tr>
+  `).join('');
+}
+
+function filterClients(q) {
+  const filtered = CLIENTS.filter(c => !q || c.desc.toLowerCase().includes(q.toLowerCase()) || c.empresa.toLowerCase().includes(q.toLowerCase()));
+  renderClients(filtered);
+}
+
+function selectClient(name, empresa, dias, serv) {
+  document.getElementById('clientDetailName').textContent = name;
+  document.querySelector('.detail-header div div div:first-child').textContent = name;
+  document.querySelector('.detail-header div div div:last-child').textContent = empresa;
+  document.querySelector('.detail-header div:nth-child(2)').innerHTML = `<span>📅 ${dias} días máx.</span><span>📋 ${serv} servicios máx.</span>`;
+}
+
+function addCostRow() {
+  const row = document.createElement('div');
+  row.className = 'cost-tag-row';
+  row.innerHTML = `
+    <select class="cost-tag-select"><option>Complejo</option><option>Medio</option><option>Simple</option></select>
+    <select class="cost-tag-select"><option>América Sur</option><option>Europa</option><option>América Norte</option><option>Asia</option></select>
+    <span style="font-size:13px">USD</span>
+    <input type="number" class="cost-input" value="0">
+    <button class="action-icon danger" style="width:28px;height:28px" onclick="this.parentElement.remove()"><span class="material-icons" style="font-size:16px">close</span></button>
+  `;
+  document.getElementById('costRows').appendChild(row);
+}
+
+function newClient() {
+  document.getElementById('clientDetailName').textContent = 'Nuevo Cliente';
+}
+
+function saveClient() { alert('✅ Cliente guardado correctamente'); }
+function go(url) { window.location.href = url; }
+function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); }
+
+renderClients(CLIENTS);
+</script>
+</body>
+</html>

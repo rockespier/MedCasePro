@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MedCase Pro – Facturación</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    .summary-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 20px; }
+    .sum-card {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--divider-light);
+      text-align: center;
+    }
+    .sum-label { font-size: 11px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 6px; }
+    .sum-value { font-size: 20px; font-weight: 700; }
+    .sum-sub { font-size: 11px; color: var(--text-secondary); margin-top: 4px; }
+    .filter-bar {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      padding: 16px 20px;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--divider-light);
+      display: flex;
+      gap: 12px;
+      align-items: flex-end;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    .filter-group { display: flex; flex-direction: column; gap: 4px; }
+    .filter-group label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; color: var(--text-secondary); }
+    .filter-control {
+      height: 38px;
+      border: 1.5px solid var(--divider);
+      border-radius: var(--radius-md);
+      padding: 0 12px;
+      font-size: 13px;
+      font-family: Roboto, sans-serif;
+      background: white;
+      outline: none;
+      transition: border-color 0.2s;
+      min-width: 140px;
+    }
+    .filter-control:focus { border-color: var(--primary); }
+    .amount-positive { color: var(--success); font-weight: 600; }
+    .amount-zero { color: var(--text-secondary); }
+    .amount-negative { color: var(--error); font-weight: 600; }
+    .total-row td { font-weight: 700; background: var(--primary-50); font-size: 13px; }
+    @media (max-width: 900px) { .summary-grid { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 600px) { .summary-grid { grid-template-columns: repeat(2, 1fr); } }
+  </style>
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand" onclick="toggleSidebar()"><div class="brand-icon"><span class="material-icons">local_hospital</span></div><span class="brand-text">MedCase Pro</span></div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Principal</div>
+      <div class="nav-item" onclick="go('dashboard.html')"><span class="material-icons">dashboard</span><span class="nav-label">Dashboard</span></div>
+      <div class="nav-item" onclick="go('casos-lista.html')"><span class="material-icons">folder_open</span><span class="nav-label">Casos</span><span class="nav-badge">47</span></div>
+      <div class="nav-section-label">Gestión</div>
+      <div class="nav-item" onclick="go('clientes.html')"><span class="material-icons">business</span><span class="nav-label">Clientes</span></div>
+      <div class="nav-item" onclick="go('proveedores.html')"><span class="material-icons">local_pharmacy</span><span class="nav-label">Proveedores</span></div>
+      <div class="nav-item active"><span class="material-icons">receipt_long</span><span class="nav-label">Facturación</span></div>
+      <div class="nav-section-label">Herramientas</div>
+      <div class="nav-item" onclick="go('administracion.html')"><span class="material-icons">admin_panel_settings</span><span class="nav-label">Administración</span></div>
+    </nav>
+    <div class="sidebar-bottom"><div class="user-card"><div class="user-avatar">WA</div><div class="user-info"><div class="user-name">Web Admin</div><div class="user-role">Administrador</div></div></div></div>
+  </aside>
+
+  <div class="main-area">
+    <header class="header">
+      <button class="header-toggle" onclick="toggleSidebar()"><span class="material-icons">menu</span></button>
+      <div><div class="page-title">Reporte de Facturación</div><div class="breadcrumb"><a href="dashboard.html">Inicio</a><span class="sep">›</span><span>Facturación</span></div></div>
+      <div style="flex:1"></div>
+      <div class="header-actions">
+        <button class="btn btn-outline btn-sm" onclick="exportExcel()"><span class="material-icons">table_chart</span>Excel</button>
+        <button class="btn btn-outline btn-sm" onclick="exportPDF()"><span class="material-icons">picture_as_pdf</span>PDF</button>
+        <button class="icon-btn"><span class="material-icons">notifications_none</span><span class="notif-dot"></span></button>
+      </div>
+    </header>
+
+    <main class="content">
+      <!-- Filtros -->
+      <div class="filter-bar">
+        <div class="filter-group">
+          <label>Fecha Inicio</label>
+          <input type="date" class="filter-control" value="2026-08-01" onchange="applyFilters()">
+        </div>
+        <div class="filter-group">
+          <label>Fecha Fin</label>
+          <input type="date" class="filter-control" value="2026-08-11" onchange="applyFilters()">
+        </div>
+        <div class="filter-group">
+          <label>Cliente</label>
+          <select class="filter-control" onchange="applyFilters()">
+            <option value="">Todos los clientes</option>
+            <option>QUANTICO</option>
+            <option>WMC</option>
+            <option>GO ASSISTANCE</option>
+            <option>WTA</option>
+            <option>PASSPORT CARD</option>
+            <option>INTERMAC ASSISTANCE</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>Estado</label>
+          <select class="filter-control" onchange="applyFilters()">
+            <option value="">Todos</option>
+            <option>Coordinar</option>
+            <option>Seguimiento</option>
+            <option>Caso Coordinado</option>
+            <option>IM Enviado</option>
+            <option>Descargos</option>
+            <option>Reembolsos</option>
+            <option>Facturación</option>
+            <option>Cancelado</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>Operador</label>
+          <select class="filter-control" onchange="applyFilters()">
+            <option value="">Todos</option>
+            <option>webadmin</option>
+            <option>luisgonzalez</option>
+            <option>mariabriceno</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" onclick="applyFilters()"><span class="material-icons">search</span>Buscar</button>
+      </div>
+
+      <!-- Estado pipeline (clickable) -->
+      <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap">
+        <div class="pipeline-item" style="flex:1;min-width:100px;background:var(--surface);border-radius:var(--radius-md);padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:var(--shadow-sm);border:1px solid var(--divider-light);cursor:pointer" onclick="">
+          <div style="width:10px;height:18px;border-radius:2px;background:var(--s-coordinar);flex-shrink:0"></div>
+          <div><div style="font-size:18px;font-weight:700">18</div><div style="font-size:10px;color:var(--text-secondary)">Coordinar</div></div>
+        </div>
+        <div class="pipeline-item" style="flex:1;min-width:100px;background:var(--surface);border-radius:var(--radius-md);padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:var(--shadow-sm);border:1px solid var(--divider-light);cursor:pointer">
+          <div style="width:10px;height:18px;border-radius:2px;background:var(--s-seguimiento);flex-shrink:0"></div>
+          <div><div style="font-size:18px;font-weight:700">12</div><div style="font-size:10px;color:var(--text-secondary)">Seguimiento</div></div>
+        </div>
+        <div class="pipeline-item" style="flex:1;min-width:100px;background:var(--surface);border-radius:var(--radius-md);padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:var(--shadow-sm);border:1px solid var(--divider-light);cursor:pointer">
+          <div style="width:10px;height:18px;border-radius:2px;background:var(--s-coordinado);flex-shrink:0"></div>
+          <div><div style="font-size:18px;font-weight:700">9</div><div style="font-size:10px;color:var(--text-secondary)">Coordinado</div></div>
+        </div>
+        <div class="pipeline-item" style="flex:1;min-width:100px;background:var(--surface);border-radius:var(--radius-md);padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:var(--shadow-sm);border:1px solid var(--divider-light);cursor:pointer">
+          <div style="width:10px;height:18px;border-radius:2px;background:var(--s-enviado);flex-shrink:0"></div>
+          <div><div style="font-size:18px;font-weight:700">24</div><div style="font-size:10px;color:var(--text-secondary)">IM Enviado</div></div>
+        </div>
+        <div class="pipeline-item" style="flex:1;min-width:100px;background:var(--surface);border-radius:var(--radius-md);padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:var(--shadow-sm);border:1px solid var(--divider-light);cursor:pointer">
+          <div style="width:10px;height:18px;border-radius:2px;background:var(--s-descargos);flex-shrink:0"></div>
+          <div><div style="font-size:18px;font-weight:700">7</div><div style="font-size:10px;color:var(--text-secondary)">Descargos</div></div>
+        </div>
+        <div class="pipeline-item" style="flex:1;min-width:100px;background:var(--surface);border-radius:var(--radius-md);padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:var(--shadow-sm);border:1px solid var(--divider-light);cursor:pointer">
+          <div style="width:10px;height:18px;border-radius:2px;background:var(--s-reembolsos);flex-shrink:0"></div>
+          <div><div style="font-size:18px;font-weight:700">3</div><div style="font-size:10px;color:var(--text-secondary)">Reembolsos</div></div>
+        </div>
+        <div class="pipeline-item" style="flex:1;min-width:100px;background:var(--surface);border-radius:var(--radius-md);padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:var(--shadow-sm);border:1px solid var(--divider-light);cursor:pointer">
+          <div style="width:10px;height:18px;border-radius:2px;background:var(--s-facturacion);flex-shrink:0"></div>
+          <div><div style="font-size:18px;font-weight:700">11</div><div style="font-size:10px;color:var(--text-secondary)">Facturación</div></div>
+        </div>
+        <div class="pipeline-item" style="flex:1;min-width:100px;background:var(--surface);border-radius:var(--radius-md);padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:var(--shadow-sm);border:1px solid var(--divider-light);cursor:pointer">
+          <div style="width:10px;height:18px;border-radius:2px;background:var(--s-cancelado);flex-shrink:0"></div>
+          <div><div style="font-size:18px;font-weight:700">2</div><div style="font-size:10px;color:var(--text-secondary)">Cancelado</div></div>
+        </div>
+      </div>
+
+      <!-- Summary KPIs -->
+      <div class="summary-grid">
+        <div class="sum-card">
+          <div class="sum-label">Total Registros</div>
+          <div class="sum-value" style="color:var(--primary)" id="sumTotal">1,718</div>
+          <div class="sum-sub">Casos en el período</div>
+        </div>
+        <div class="sum-card">
+          <div class="sum-label">Costo Proveedor</div>
+          <div class="sum-value" style="color:var(--error)" id="sumCostoProv">USD 284,500</div>
+          <div class="sum-sub">Total pagado a proveedores</div>
+        </div>
+        <div class="sum-card">
+          <div class="sum-label">Fee Total</div>
+          <div class="sum-value" style="color:var(--primary)" id="sumFee">USD 28,400</div>
+          <div class="sum-sub">Comisiones generadas</div>
+        </div>
+        <div class="sum-card">
+          <div class="sum-label">Costo Médico</div>
+          <div class="sum-value" style="color:var(--warning)" id="sumMedico">USD 142,000</div>
+          <div class="sum-sub">Honorarios médicos</div>
+        </div>
+        <div class="sum-card">
+          <div class="sum-label">Total a Facturar</div>
+          <div class="sum-value" style="color:var(--success)" id="sumTotal2">USD 454,900</div>
+          <div class="sum-sub">Total cobrado a clientes</div>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="card">
+        <div class="card-header">
+          <span class="material-icons" style="color:var(--primary)">receipt_long</span>
+          <span class="card-title">Detalle de Casos</span>
+          <span class="text-secondary text-xs"># Registros: <strong id="totalReg">1,718</strong></span>
+          <button class="btn btn-sm btn-outline" onclick="exportExcel()"><span class="material-icons">download</span>Exportar</button>
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Estado</th>
+                <th>ID Caso</th>
+                <th>Pasajero</th>
+                <th>Cliente</th>
+                <th>Proveedor</th>
+                <th>F. Servicio</th>
+                <th>C. Proveedor</th>
+                <th>Fee</th>
+                <th>C. Médico</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody id="billingTable">
+            </tbody>
+            <tfoot>
+              <tr class="total-row" id="totalRow">
+                <td colspan="6" style="text-align:right;padding-right:20px">TOTALES:</td>
+                <td>USD 284,500</td>
+                <td>USD 28,400</td>
+                <td>USD 142,000</td>
+                <td style="color:var(--success)">USD 454,900</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+        <div class="card-footer" style="justify-content:space-between">
+          <span class="text-sm text-secondary">Mostrando 10 de 1,718 registros</span>
+          <div class="pagination">
+            <button class="page-btn"><span class="material-icons">chevron_left</span></button>
+            <button class="page-btn active">1</button>
+            <button class="page-btn">2</button>
+            <button class="page-btn">3</button>
+            <span style="align-self:center;color:var(--text-secondary)">…</span>
+            <button class="page-btn">172</button>
+            <button class="page-btn"><span class="material-icons">chevron_right</span></button>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script>
+const BILLING = [
+  { status:'coordinar',   id:'UMA-117822', name:'ROBERTO RAMOS',         client:'QUANTICO',           prov:'MEDIC SERVICE S.A.',           fecha:'11/08/2026', cp:'50.00',   fee:'0.00', cm:'80.00', total:'130.00' },
+  { status:'seguimiento', id:'VNA-117821', name:'JUAN SEBASTIAN VASQUEZ', client:'WMC',                prov:'—',                            fecha:'—',          cp:'0.00',    fee:'80.00',cm:'0.00',  total:'80.00'  },
+  { status:'coordinar',   id:'VNA-117820', name:'CARDOZO, CARLA MICAELA', client:'GO ASSISTANCE',      prov:'—',                            fecha:'—',          cp:'0.00',    fee:'20.00',cm:'0.00',  total:'20.00'  },
+  { status:'seguimiento', id:'VNA-117819', name:'SARAH MILOUD',           client:'WTA',                prov:'—',                            fecha:'—',          cp:'0.00',    fee:'40.00',cm:'0.00',  total:'40.00'  },
+  { status:'enviado',     id:'VNA-117818', name:'NOA KESSARY',            client:'PASSPORT CARD',      prov:'HOSPITURS MEDICAL SERVICES',   fecha:'10/08/2026', cp:'0.00',    fee:'0.00', cm:'0.00',  total:'0.00'   },
+  { status:'seguimiento', id:'VNA-117817', name:'MARCOS MEJIAS PALACIOS', client:'WMC',                prov:'CENTRO MÉDICO INTEGRAL VALE.', fecha:'10/08/2026', cp:'0.00',    fee:'60.00',cm:'0.00',  total:'60.00'  },
+  { status:'coordinado',  id:'VNA-117816', name:'BRENDA DA SILVA COSTA',  client:'INTERMAC ASSISTANCE',prov:'GORAL ASSISTANCE USA',         fecha:'11/08/2026', cp:'0.00',    fee:'40.00',cm:'0.00',  total:'40.00'  },
+  { status:'enviado',     id:'VNA-117815', name:'NATALIYA KHARCHUK',      client:'WTA',                prov:'SANATORIO CENTRO MÉDICO',      fecha:'10/08/2026', cp:'ARS 15000',fee:'60.00',cm:'120.00',total:'180.00'},
+  { status:'facturacion', id:'VNA-117814', name:'OMAR ANTONIO CACERES',   client:'PASSPORT CARD',      prov:'HOSPITAL GENERAL NORTE',       fecha:'09/08/2026', cp:'250.00',  fee:'25.00',cm:'0.00',  total:'275.00' },
+  { status:'descargos',   id:'VNA-117813', name:'EDITH PAULINA GARCIA',   client:'GO ASSISTANCE',      prov:'CLÍNICA SAN BORJA',            fecha:'09/08/2026', cp:'180.00',  fee:'18.00',cm:'50.00', total:'248.00' },
+];
+
+const statusMap = {
+  coordinar:'status-coordinar',seguimiento:'status-seguimiento',coordinado:'status-coordinado',
+  enviado:'status-enviado',descargos:'status-descargos',reembolsos:'status-reembolsos',
+  facturacion:'status-facturacion',cancelado:'status-cancelado'
+};
+const statusLabel = {
+  coordinar:'Coordinar',seguimiento:'Seguimiento',coordinado:'Coordinado',
+  enviado:'IM Enviado',descargos:'Descargos',reembolsos:'Reembolsos',
+  facturacion:'Facturación',cancelado:'Cancelado'
+};
+
+function renderBilling(data) {
+  document.getElementById('billingTable').innerHTML = data.map(r => `
+    <tr style="cursor:pointer" onclick="go('caso-detalle.html')">
+      <td><span class="status-badge ${statusMap[r.status]}" style="font-size:11px"><span class="flag-dot"></span>${statusLabel[r.status]}</span></td>
+      <td><span style="color:var(--primary);font-weight:500;font-size:13px">${r.id}</span></td>
+      <td style="font-size:13px">${r.name}</td>
+      <td style="font-size:13px">${r.client}</td>
+      <td style="font-size:13px">${r.prov}</td>
+      <td class="date-cell">${r.fecha}</td>
+      <td><span class="${parseFloat(r.cp)>0?'amount-positive':'amount-zero'} text-sm">USD ${r.cp}</span></td>
+      <td><span class="${parseFloat(r.fee)>0?'amount-positive':'amount-zero'} text-sm">USD ${r.fee}</span></td>
+      <td><span class="${parseFloat(r.cm)>0?'amount-positive':'amount-zero'} text-sm">USD ${r.cm}</span></td>
+      <td><span class="${parseFloat(r.total)>0?'amount-positive':'amount-zero'}" style="font-size:13px">USD ${r.total}</span></td>
+    </tr>
+  `).join('');
+}
+
+function applyFilters() { renderBilling(BILLING); }
+function exportExcel() { alert('Exportando a Excel…'); }
+function exportPDF() { alert('Generando PDF…'); }
+function go(url) { window.location.href = url; }
+function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); }
+
+renderBilling(BILLING);
+</script>
+</body>
+</html>

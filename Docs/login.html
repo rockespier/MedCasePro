@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MedCase Pro – Iniciar Sesión</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #1565C0;
+      --primary-dark: #0D47A1;
+      --primary-50: #E3F2FD;
+      --accent: #FF6F00;
+      --error: #D32F2F;
+      --surface: #FFFFFF;
+      --bg: #F0F4F8;
+      --text-primary: #212121;
+      --text-secondary: #546E7A;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: linear-gradient(135deg, #0D47A1 0%, #1565C0 45%, #1976D2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .login-container {
+      display: flex;
+      width: 100%;
+      max-width: 900px;
+      min-height: 540px;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.3);
+    }
+    /* Left panel */
+    .login-left {
+      flex: 1;
+      background: rgba(255,255,255,0.07);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.15);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 48px 40px;
+      color: white;
+      position: relative;
+      overflow: hidden;
+    }
+    .login-left::before {
+      content: '';
+      position: absolute;
+      width: 300px; height: 300px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.05);
+      top: -80px; left: -80px;
+    }
+    .login-left::after {
+      content: '';
+      position: absolute;
+      width: 200px; height: 200px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.05);
+      bottom: -60px; right: -60px;
+    }
+    .brand-logo {
+      width: 72px; height: 72px;
+      background: white;
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 24px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+      position: relative; z-index: 1;
+    }
+    .brand-logo .material-icons { font-size: 40px; color: var(--primary); }
+    .brand-name {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin-bottom: 8px;
+      position: relative; z-index: 1;
+    }
+    .brand-tagline {
+      font-size: 14px;
+      font-weight: 300;
+      opacity: 0.8;
+      text-align: center;
+      line-height: 1.6;
+      max-width: 240px;
+      position: relative; z-index: 1;
+    }
+    .features-list {
+      margin-top: 40px;
+      list-style: none;
+      width: 100%;
+      position: relative; z-index: 1;
+    }
+    .features-list li {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+      font-size: 14px;
+      opacity: 0.85;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .features-list li:last-child { border-bottom: none; }
+    .features-list .material-icons { font-size: 18px; color: #80DEEA; }
+    /* Right panel */
+    .login-right {
+      width: 400px;
+      background: white;
+      padding: 48px 40px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .login-title { font-size: 24px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px; }
+    .login-subtitle { font-size: 14px; color: var(--text-secondary); margin-bottom: 36px; }
+    .form-group { margin-bottom: 20px; }
+    .form-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+    }
+    .form-input {
+      width: 100%;
+      height: 48px;
+      border: 2px solid #E0E0E0;
+      border-radius: 10px;
+      padding: 0 16px 0 44px;
+      font-size: 15px;
+      font-family: 'Roboto', sans-serif;
+      color: var(--text-primary);
+      transition: all 0.2s;
+      background: #FAFAFA;
+      outline: none;
+    }
+    .form-input:focus { border-color: var(--primary); background: white; box-shadow: 0 0 0 4px rgba(21,101,192,0.1); }
+    .input-wrapper { position: relative; }
+    .input-icon {
+      position: absolute;
+      left: 14px; top: 50%;
+      transform: translateY(-50%);
+      color: #9E9E9E;
+      font-size: 20px;
+    }
+    .input-icon-right {
+      position: absolute;
+      right: 14px; top: 50%;
+      transform: translateY(-50%);
+      color: #9E9E9E;
+      font-size: 20px;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+    .input-icon-right:hover { color: var(--primary); }
+    .form-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 28px;
+    }
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      color: var(--text-secondary);
+      cursor: pointer;
+    }
+    .checkbox-label input[type="checkbox"] {
+      width: 16px; height: 16px;
+      accent-color: var(--primary);
+      cursor: pointer;
+    }
+    .forgot-link {
+      font-size: 14px;
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .forgot-link:hover { text-decoration: underline; }
+    .btn-login {
+      width: 100%;
+      height: 52px;
+      background: linear-gradient(135deg, #1565C0, #1976D2);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      font-family: 'Roboto', sans-serif;
+      cursor: pointer;
+      transition: all 0.25s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 16px rgba(21,101,192,0.35);
+      letter-spacing: 0.3px;
+    }
+    .btn-login:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(21,101,192,0.45); }
+    .btn-login:active { transform: translateY(0); }
+    .btn-login .material-icons { font-size: 20px; }
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 24px 0;
+      color: #BDBDBD;
+      font-size: 12px;
+    }
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #E0E0E0;
+    }
+    .login-footer {
+      margin-top: 32px;
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+    .error-msg {
+      display: none;
+      background: #FFEBEE;
+      border: 1px solid #FFCDD2;
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 13px;
+      color: var(--error);
+      margin-bottom: 20px;
+      align-items: center;
+      gap: 8px;
+    }
+    .error-msg.show { display: flex; }
+    .badge-version {
+      position: absolute;
+      top: 16px; right: 16px;
+      background: rgba(255,255,255,0.15);
+      color: white;
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,0.25);
+    }
+    @media (max-width: 680px) {
+      .login-left { display: none; }
+      .login-right { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <!-- Left Brand Panel -->
+    <div class="login-left">
+      <span class="badge-version">v2.0.0</span>
+      <div class="brand-logo">
+        <span class="material-icons">local_hospital</span>
+      </div>
+      <div class="brand-name">MedCase Pro</div>
+      <div class="brand-tagline">Plataforma de Gestión de Casos de Atención Médica para Seguros de Viaje</div>
+      <ul class="features-list">
+        <li><span class="material-icons">speed</span> Gestión ágil de casos en tiempo real</li>
+        <li><span class="material-icons">people</span> Coordinación con proveedores globales</li>
+        <li><span class="material-icons">receipt_long</span> Facturación y control de costos</li>
+        <li><span class="material-icons">notifications_active</span> Alertas y seguimiento automático</li>
+        <li><span class="material-icons">insert_chart</span> Reportes y analíticas avanzadas</li>
+      </ul>
+    </div>
+
+    <!-- Right Login Form -->
+    <div class="login-right">
+      <div class="login-title">Bienvenido</div>
+      <div class="login-subtitle">Ingresa tus credenciales para continuar</div>
+
+      <div class="error-msg" id="errorMsg">
+        <span class="material-icons">error_outline</span>
+        Usuario o contraseña incorrectos. Intenta nuevamente.
+      </div>
+
+      <form onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label class="form-label">Usuario</label>
+          <div class="input-wrapper">
+            <span class="material-icons input-icon">person</span>
+            <input type="text" class="form-input" id="username" placeholder="Ingresa tu usuario" value="webadmin" autocomplete="username">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Contraseña</label>
+          <div class="input-wrapper">
+            <span class="material-icons input-icon">lock</span>
+            <input type="password" class="form-input" id="password" placeholder="••••••••" value="123456" autocomplete="current-password">
+            <span class="material-icons input-icon-right" onclick="togglePassword()" id="eyeIcon">visibility</span>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label class="checkbox-label">
+            <input type="checkbox" checked> Recordar sesión
+          </label>
+          <a href="#" class="forgot-link">¿Olvidaste tu contraseña?</a>
+        </div>
+
+        <button type="submit" class="btn-login">
+          <span class="material-icons">login</span>
+          Iniciar Sesión
+        </button>
+      </form>
+
+      <div class="divider">Acceso seguro SSL/TLS</div>
+
+      <div class="login-footer">
+        © 2027 MedCase Pro · Todos los derechos reservados<br>
+        <a href="#" style="color: var(--primary); text-decoration: none;">Política de privacidad</a> &nbsp;·&nbsp;
+        <a href="#" style="color: var(--primary); text-decoration: none;">Soporte técnico</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function togglePassword() {
+      const input = document.getElementById('password');
+      const icon = document.getElementById('eyeIcon');
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.textContent = 'visibility_off';
+      } else {
+        input.type = 'password';
+        icon.textContent = 'visibility';
+      }
+    }
+
+    function handleLogin(e) {
+      e.preventDefault();
+      const user = document.getElementById('username').value;
+      const pass = document.getElementById('password').value;
+      const err = document.getElementById('errorMsg');
+      if (user === 'webadmin' && pass === '123456') {
+        err.classList.remove('show');
+        window.location.href = 'dashboard.html';
+      } else {
+        err.classList.add('show');
+      }
+    }
+  </script>
+</body>
+</html>
