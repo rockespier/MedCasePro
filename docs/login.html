@@ -298,7 +298,7 @@
           <label class="form-label">Usuario</label>
           <div class="input-wrapper">
             <span class="material-icons input-icon">person</span>
-            <input type="text" class="form-input" id="username" placeholder="Ingresa tu usuario" value="webadmin" autocomplete="username">
+            <input type="text" class="form-input" id="username" placeholder="Ingresa tu usuario" autocomplete="username">
           </div>
         </div>
 
@@ -306,7 +306,7 @@
           <label class="form-label">Contraseña</label>
           <div class="input-wrapper">
             <span class="material-icons input-icon">lock</span>
-            <input type="password" class="form-input" id="password" placeholder="••••••••" value="123456" autocomplete="current-password">
+            <input type="password" class="form-input" id="password" placeholder="••••••••" autocomplete="current-password">
             <span class="material-icons input-icon-right" onclick="togglePassword()" id="eyeIcon">visibility</span>
           </div>
         </div>
@@ -349,15 +349,8 @@
 
     function handleLogin(e) {
       e.preventDefault();
-      const user = document.getElementById('username').value;
-      const pass = document.getElementById('password').value;
       const err = document.getElementById('errorMsg');
-      if (user === 'webadmin' && pass === '123456') {
-        err.classList.remove('show');
-        window.location.href = 'dashboard.html';
-      } else {
-        err.classList.add('show');
-      }
+      err.classList.add('show');
     }
   </script>
 </body>
